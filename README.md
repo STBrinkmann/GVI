@@ -213,10 +213,10 @@ vgvi_sf <- vgvi_from_sf(observer = isodistance,
                         m = 1, b = 3, mode = "exponential", cores = 12)
 ```
 
-![](docs/VGVI_Isoline.png) *Output of the* `vgvi_from_sf` *function. Red
-points indicate low, green points indicate high values of VGVI. Paths
-and roads along the park tend to have high visible greenness, the road
-in the east has low visible greenness.*
+<img src="docs/VGVI_Isoline.png" width="100%" /> *Output of the*
+`vgvi_from_sf` *function. Red points indicate low, green points indicate
+high values of VGVI. Paths and roads along the park tend to have high
+visible greenness, the road in the east has low visible greenness.*
 
 ### 3. Large Area of Interest
 
