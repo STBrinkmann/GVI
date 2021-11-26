@@ -1,0 +1,37 @@
+Package: GVI
+Type: Package
+Title: R package for computing VGVI for Spatial Raster
+Version: 1.0
+Date: 2021-11-25
+Authors@R: 
+    c(person(given = "Sebastian",
+           family = "Brinkmann",
+           role = c("aut", "cre"),
+           email = "sebastian.brinkmann@fau.de",
+           comment = c(ORCID = "0000-0001-9835-7347")),
+      person(given = "S.M.",
+           family = "Labib",
+           role = c("aut"),
+           email = "sml80@medschl.cam.ac.uk",
+           comment = c(ORCID = "0000-0002-4127-2075")))
+Description: Uses a R Viewshed implementation to calculate a GVI surface from a DSM, DTM and Greenness Surface.
+License: MIT + file LICENSE
+Encoding: UTF-8
+URL: https://github.com/STBrinkmann/GVI
+BugReports: https://github.com/STBrinkmann/GVI/issues
+Imports: 
+    doParallel,
+    dplyr,
+    foreach,
+    magrittr,
+    raster,
+    Rcpp,
+    sf,
+    terra,
+    graphics,
+    methods,
+    utils
+Depends:
+    R (>= 3.3.0)
+LinkingTo: Rcpp
+RoxygenNote: 7.1.2
