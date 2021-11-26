@@ -99,8 +99,9 @@ parameterize the decay weights of a logistic (left) and an exponential
 
 ### Viewshed Greenness Visibility Index (VGVI) from sf
 
-The `vgvi_from_sf` function combines the `viewshed` and `vgvi`
-functions. The input of the observer location is an
+The `vgvi_from_sf` function combines the `viewshed` function to compute
+a raster of visible cells, and calculates the VGVI using a binary
+GreenSpace map. The input of the observer location is an
 [sf](https://r-spatial.github.io/sf/) object (supports points, lines and
 polygons). If this object is a line or polygon feature, it will be
 converted to points. For every point, first the viewshed, than the VGVI
