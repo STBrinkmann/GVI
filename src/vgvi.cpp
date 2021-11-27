@@ -93,13 +93,13 @@ Rcpp::NumericVector VGVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_value
     
     // Project reference cells to actual cell value
     Rcpp::IntegerVector viewshed(nc_ref*nr_ref, NA_INTEGER);
-    viewshed[c0_ref] = input_cells[k];
+    viewshed[c0_ref] = input_cells[k]+1;
     int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
     for(int j = 0; j < visibility_vec.size(); j++){
       if(visibility_vec[j]){
         const int cell = x + j + trunc(j/nc_ref)*(ras.ncol-nc_ref);
         const int row = cell - (trunc(cell/ras.ncol) * ras.ncol);
-        const int drow = abs(row-x0_o[0]);
+        const int drow = abs(row-x0_o[k]);
         
         viewshed[j] = (cell<0 || cell > ras.ncell ||
           Rcpp::NumericVector::is_na(dsm_values[cell]) ||
@@ -278,13 +278,13 @@ Rcpp::IntegerVector viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_v
   
   // Project reference cells to actual cell value
   Rcpp::IntegerVector viewshed(nc_ref*nr_ref, NA_INTEGER);
-  viewshed[c0_ref] = input_cells[k];
+  viewshed[c0_ref] = input_cells[k]+1;
   int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
   for(int j = 0; j < visibility_vec.size(); j++){
     if(visibility_vec[j]){
       const int cell = x + j + trunc(j/nc_ref)*(ras.ncol-nc_ref);
       const int row = cell - (trunc(cell/ras.ncol) * ras.ncol);
-      const int drow = abs(row-x0_o[0]);
+      const int drow = abs(row-x0_o[k]);
       
       viewshed[j] = (cell<0 || cell > ras.ncell ||
         Rcpp::NumericVector::is_na(dsm_values[cell]) ||
@@ -296,7 +296,6 @@ Rcpp::IntegerVector viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_v
 }
 
 
-// [[Rcpp::export]]
 double GVI_cpp(Rcpp::S4 &dsm, const Rcpp::IntegerVector &viewshed_values,
                Rcpp::S4 &greenspace, const Rcpp::NumericVector &greenspace_values,
                const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0,
