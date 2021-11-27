@@ -9,7 +9,3 @@ viewshed_cpp <- function(dsm, dsm_values, x0, y0, radius, h0) {
     .Call(`_GVI_viewshed_cpp`, dsm, dsm_values, x0, y0, radius, h0)
 }
 
-GVI_cpp <- function(dsm, viewshed_values, greenspace, greenspace_values, x0, y0, radius, fun, m, b) {
-    .Call(`_GVI_GVI_cpp`, dsm, viewshed_values, greenspace, greenspace_values, x0, y0, radius, fun, m, b)
-}
-
