@@ -25,7 +25,7 @@ viewshed(
 
 \item{observer_height}{numeric > 0; Height of the observer (e.g. 1.7 meters)}
 
-\item{resolution}{optional; NULL or numeric > 0; Resolution that the GVI raster should be aggregated to. Needs to be a multible of the dsm_rast resolution}
+\item{resolution}{optional; NULL or numeric > 0; Resolution that the viewshed raster should be aggregated to. Must be a multible of the dsm_rast resolution}
 
 \item{plot}{optional; Plot the intersect of the buffer around the observer location and the DSM (left DSM; right visibility raster)}
 }
@@ -33,5 +33,5 @@ viewshed(
 object of class \code{\link[terra]{SpatRaster}}
 }
 \description{
-Computes the viewshed of a point on a Digital Surface Model map.
+Computes a binary viewshed of a point on a Digital Surface Model (DSM). The observer height is based on the heigth of a Digital Terrain Model (DTM).
 }
