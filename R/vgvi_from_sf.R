@@ -119,6 +119,9 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     stop("greenspace_rast needs to have the same CRS as observer")
   }
   
+  # max_distance
+  max_distance <- round(max_distance, digits = 0)
+  
   # raster_res
   dsm_res <- min(terra::res(dsm_rast))
   if (is.null(raster_res)) {
