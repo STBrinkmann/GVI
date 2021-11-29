@@ -61,11 +61,10 @@ Huck](https://github.com/jonnyhuck/green-visibility-index)
 
 ### Viewshed
 
-The `viewshed` function computes the viewshed of a single point on a
-Digital Surface Model (DSM) raster. A buffer is applied on the observer
-position, and for every point on the perimeter a Line of Sight (LoS) is
-being calculated. Visibility along every point on the LoS is computed
-using a C++ implementation of Bresenham’s line algorithm \[[Bresenham
+The `viewshed` function computes a binary viewshed of a single point on
+a Digital Surface Model (DSM) raster. A radial buffer is applied on the
+observer position, and visibility is beeing calculated usig a C++
+implementation of Bresenham’s line algorithm \[[Bresenham
 1965](https://doi.org/10.1147/sj.41.0025), [Bresenham
 1977](https://doi.org/10.1145/359423.359432)\] and simple geometry. The
 result of the `viewshed` function is a radial raster where 0 =
@@ -79,10 +78,11 @@ between 0 and 1, where 0 = no green cells are visible, and 1 = all of
 the visible cells are green.
 
 Based on a viewshed and a binary greenspace raster, all visible points
-are classified as visible and not-visible. All values are summarized
-using a decay function, to account for the reducing visual prominence of
-an object in space with increasing distance from the observer. Currently
-two options are supported, a logistic and an exponential function.
+are classified as visible green and visible no-green. All values are
+summarized using a decay function, to account for the reducing visual
+prominence of an object in space with increasing distance from the
+observer. Currently two options are supported, a logistic and an
+exponential function.
 
 ![ \\begin{align\*} f(x) = \\cfrac{1}{1 + e^{b(x-m)}} && \\text{(logistic)}\\\\ f(x) = \\cfrac{1}{1 + (bx^{m})} && \\text{(exponential)} \\end{align\*} ](https://latex.codecogs.com/svg.latex?%20%5Cbegin%7Balign%2A%7D%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20e%5E%7Bb%28x-m%29%7D%7D%20%26%26%20%5Ctext%7B%28logistic%29%7D%5C%5C%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20%28bx%5E%7Bm%7D%29%7D%20%26%26%20%5Ctext%7B%28exponential%29%7D%20%5Cend%7Balign%2A%7D%20 " \begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} ")
 
@@ -168,7 +168,7 @@ Calculate the viewshed for a 200 meters radius around the observers
 position at 1.7 meters height (eye level).
 
 ``` r
-library(GVI2)
+library(GVI)
 viewshed1 <- viewshed(observer = observer, dsm_rast = DSM, dtm_rast = DEM,
                       max_distance = 200, observer_height = 1.7, plot = TRUE)
 ```
