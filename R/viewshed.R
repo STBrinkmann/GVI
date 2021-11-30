@@ -3,13 +3,13 @@
 #'
 #' @param observer object of class \code{sf} with one point; Starting location
 #' @param max_distance numeric; Buffer distance to calculate the viewshed
-#' @param dsm_rast object of class \code{\link[terra]{SpatRaster}}; \code{\link[terra]{SpatRaster}} of the DSM
-#' @param dtm_rast object of class \code{\link[terra]{SpatRaster}}; \code{\link[terra]{SpatRaster}} of the DTM
+#' @param dsm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM
+#' @param dtm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DTM
 #' @param observer_height numeric > 0; Height of the observer (e.g. 1.7 meters)
 #' @param resolution optional; NULL or numeric > 0; Resolution that the viewshed raster should be aggregated to. Must be a multible of the dsm_rast resolution
 #' @param plot optional; Plot the intersect of the buffer around the observer location and the DSM (left DSM; right visibility raster)
 #'
-#' @return object of class \code{\link[terra]{SpatRaster}}
+#' @return object of class \code{\link[terra]{rast}}
 #' @export
 #' 
 #' @importFrom magrittr %>%

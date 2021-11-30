@@ -1,7 +1,7 @@
 #' @title Visualize Weights
 #' @description Helper function to visualize the parameters used in the \code{\link[GVI]{vgvi_from_sf}} function.
 #' 
-#' @param x numeric or object of class \code{\link[terra]{SpatRaster}}; Either numeric, indicating the buffer distance or a \code{\link[terra]{SpatRaster}} of the \code{\link[GVI]{viewshed}} function.
+#' @param x numeric or object of class \code{\link[terra]{rast}}; Either numeric, indicating the buffer distance or a \code{\link[terra]{rast}} of the \code{\link[GVI]{viewshed}} function.
 #' @param m numeric; See ‘Details’.
 #' @param b numeric; See ‘Details’.
 #' @param mode character; 'logit' or 'exponential'. See ‘Details’.
