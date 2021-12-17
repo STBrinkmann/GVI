@@ -5,11 +5,11 @@ VGVI_cpp <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, rad
     .Call(`_GVI_VGVI_cpp`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b)
 }
 
-VGVI_cpp2 <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b, ncores = 1L) {
-    .Call(`_GVI_VGVI_cpp2`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b, ncores)
-}
-
 viewshed_cpp <- function(dsm, dsm_values, x0, y0, radius, h0) {
     .Call(`_GVI_viewshed_cpp`, dsm, dsm_values, x0, y0, radius, h0)
+}
+
+viewshed_distance_analysis_cpp <- function(dsm, dsm_values, x0, y0, radius, h0, ncores = 1L, display_progress = FALSE) {
+    .Call(`_GVI_viewshed_distance_analysis_cpp`, dsm, dsm_values, x0, y0, radius, h0, ncores, display_progress)
 }
 

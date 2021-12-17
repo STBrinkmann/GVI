@@ -115,3 +115,51 @@ void LoS(const Rcpp::IntegerMatrix &los_ref_mat,
     }
   }
 }
+
+Rcpp::IntegerVector LoS_reference(const int x0_ref, const int y0_ref, const int r, const int nc_ref) {
+  const int l = r+1;
+  
+  // 1. Reference Bresenham Lines for the first eigth of circle
+  const Rcpp::IntegerMatrix bh_mat = bresenham_map(x0_ref, y0_ref, r, nc_ref);
+  
+  // 2. Reference matrix (los_mat): Project reference Bresenham Lines to all perimeter cells
+  // Will be used as a reference for all input points
+  Rcpp::IntegerVector los_ref_vec = Rcpp::IntegerVector(r*8 * r);
+  
+  for(int i=0; i<l; i++){
+    const Rcpp::IntegerMatrix bs_xy = colRowFromCell(bh_mat( i,_ ), nc_ref);
+    
+    for(int j=0; j<r; j++){
+      if ( Rcpp::IntegerVector::is_na(bs_xy( j,0 )) || Rcpp::IntegerVector::is_na(bs_xy( j,1 )) ) {
+        los_ref_vec[(0*r+i)*r + j] = NA_INTEGER;
+        los_ref_vec[(2*r+i)*r + j] = NA_INTEGER;
+        los_ref_vec[(4*r+i)*r + j] = NA_INTEGER;
+        los_ref_vec[(6*r+i)*r + j] = NA_INTEGER;
+        
+        if( i != 0 && i != (l-1) ) {
+          los_ref_vec[(2*r-i)*r + j] = NA_INTEGER;
+          los_ref_vec[(4*r-i)*r + j] = NA_INTEGER;
+          los_ref_vec[(6*r-i)*r + j] = NA_INTEGER;
+          los_ref_vec[(8*r-i)*r + j] = NA_INTEGER;
+        }
+      } else {
+        const int x = bs_xy( j,0 )-x0_ref;
+        const int y = bs_xy( j,1 )-x0_ref;
+        los_ref_vec[(0*r+i)*r + j] = (y+y0_ref)*nc_ref + (x+x0_ref);
+        los_ref_vec[(2*r+i)*r + j] = (-x+y0_ref)*nc_ref + (y+x0_ref);
+        los_ref_vec[(4*r+i)*r + j] = (-y+y0_ref)*nc_ref + (-x+x0_ref);
+        los_ref_vec[(6*r+i)*r + j] = (x+y0_ref)*nc_ref + (-y+x0_ref);
+        
+        if( i != 0 && i != (l-1) ) {
+          los_ref_vec[(2*r-i)*r + j] = (x+y0_ref)*nc_ref + (y+x0_ref);
+          los_ref_vec[(4*r-i)*r + j] = (-y+y0_ref)*nc_ref + (x+x0_ref);
+          los_ref_vec[(6*r-i)*r + j] = (-x+y0_ref)*nc_ref + (-y+x0_ref);
+          los_ref_vec[(8*r-i)*r + j] = (y+y0_ref)*nc_ref + (-x+x0_ref);
+        }
+        
+      }
+    }
+  }
+  
+  return los_ref_vec;
+}
