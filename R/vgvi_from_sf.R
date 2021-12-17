@@ -82,8 +82,7 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
                          raster_res = NULL, spacing = raster_res,
                          m = 0.5, b = 8, mode = c("logit", "exponential"),
                          cores = 1, chunk_size = 10000,
-                         folder_path = NULL , progress = FALSE,
-                         old = FALSE) {
+                         folder_path = NULL, progress = FALSE) {
   
   #### 1. Check input ####
   # observer
@@ -280,7 +279,7 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     start_time <- Sys.time()
   }
   
-  if (cores > 1 && Sys.info()[["sysname"]] == "Windows" && old) {
+  if (cores > 1 && Sys.info()[["sysname"]] == "Windows") {
     cl <- parallel::makeCluster(cores)
     doParallel::registerDoParallel(cl)
   }
@@ -291,43 +290,35 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     this_ids <- this_aoi$id
     
     #### Calculate VGVI
-    if(old){
-      if (cores > 1) {
-        if (Sys.info()[["sysname"]] == "Windows") {
-          # Calculate VGVI in parallel
-          par_fun <-  function(i){
-            VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                     greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
-                     x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
-                     fun = mode, m = m, b = b)
-          }
-          
-          vgvi_list <- foreach::foreach(i=this_ids) %dopar% par_fun(i)
-        }
-        else {
-          vgvi_list <- parallel::mclapply(this_ids, function(i){
-            VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                     greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
-                     x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
-                     fun = mode, m = m, b = b)},
-            mc.cores = cores, mc.preschedule = TRUE)
-        }
-      } else {
-        vgvi_list <- lapply(this_ids, function(i){
+    if (cores > 1) {
+      if (Sys.info()[["sysname"]] == "Windows") {
+        # Calculate VGVI in parallel
+        par_fun <-  function(i){
           VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
                    greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
                    x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
-                   fun = mode, m = m, b = b)})
+                   fun = mode, m = m, b = b)
+        }
+        
+        vgvi_list <- foreach::foreach(i=this_ids) %dopar% par_fun(i)
       }
-      
-      vgvi_values <- unlist(vgvi_list, use.names = FALSE)
+      else {
+        vgvi_list <- parallel::mclapply(this_ids, function(i){
+          VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
+                   greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
+                   x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
+                   fun = mode, m = m, b = b)},
+          mc.cores = cores, mc.preschedule = TRUE)
+      }
     } else {
-      vgvi_values <- VGVI_cpp2(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                               greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
-                               x0 = x0[this_ids], y0 = y0[this_ids], radius = max_distance, h0 = height_0_vec[this_ids],
-                               fun = mode, m = m, b = b, ncores = cores)
+      vgvi_list <- lapply(this_ids, function(i){
+        VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
+                 greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
+                 x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
+                 fun = mode, m = m, b = b)})
     }
     
+    vgvi_values <- unlist(vgvi_list, use.names = FALSE)
     
     # Update observer
     valid_values <- unlist(lapply(vgvi_values, is.numeric), use.names = FALSE)
@@ -340,7 +331,7 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     # Update ProgressBar
     if (progress) setTxtProgressBar(pb, j)
   }
-  if (cores > 1 && Sys.info()[["sysname"]] == "Windows" && old) {
+  if (cores > 1 && Sys.info()[["sysname"]] == "Windows") {
     parallel::stopCluster(cl)
   }
   
