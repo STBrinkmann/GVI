@@ -6,7 +6,7 @@
 #' @param dsm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM
 #' @param dtm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DTM
 #' @param observer_height numeric > 0; Height of the observer (e.g. 1.7 meters)
-#' @param resolution optional; NULL or numeric > 0; Resolution that the viewshed raster should be aggregated to. Must be a multible of the dsm_rast resolution
+#' @param raster_res optional; NULL or numeric > 0; Resolution that the viewshed raster should be aggregated to. Must be a multible of the dsm_rast resolution
 #' @param plot optional; Plot the intersect of the buffer around the observer location and the DSM (left DSM; right visibility raster)
 #'
 #' @return object of class \code{\link[terra]{rast}}
@@ -38,7 +38,7 @@
 
 viewshed <- function(observer, dsm_rast, dtm_rast, 
                      max_distance = 800, observer_height = 1.7, 
-                     resolution = NULL, plot = FALSE) {
+                     raster_res = NULL, plot = FALSE) {
   #### 1. Check input ####
   # observer
   if (!is(observer, "sf")) {
@@ -68,14 +68,14 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   # max_distance
   max_distance <- round(max_distance, digits = 0)
   
-  # resolution
+  # raster_res
   dsm_res <- min(terra::res(dsm_rast))
-  if (is.null(resolution)) {
-    resolution = dsm_res
-  } else if (resolution < min(terra::res(dsm_rast))) {
-    stop("resolution must be higher than the resolution of dsm_rast")
-  } else if ((resolution %% dsm_res) != 0) {
-    stop(paste0("resolution must be a multible of the dsm_rast resolution. Try resolution = ", resolution - (resolution %% dsm_res)))
+  if (is.null(raster_res)) {
+    raster_res = dsm_res
+  } else if (raster_res < min(terra::res(dsm_rast))) {
+    stop("raster_res must be higher than the resolution of dsm_rast")
+  } else if ((raster_res %% dsm_res) != 0) {
+    stop(paste0("raster_res must be a multible of the dsm_rast resolution. Try raster_res = ", raster_res - (raster_res %% dsm_res)))
   }
   rm(dsm_res)
   
@@ -86,23 +86,23 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   
   # AOI
   output <- rast(crs = crs(dsm_rast),
-                 xmin = floor(x0 - resolution/2 - max_distance), 
-                 xmax = ceiling(x0 + resolution/2 +max_distance),
-                 ymin = floor(y0 - resolution/2 - max_distance), 
-                 ymax = ceiling(y0 + resolution/2 +max_distance),
-                 resolution = resolution, vals = 0)
+                 xmin = floor(x0 - raster_res/2 - max_distance), 
+                 xmax = ceiling(x0 + raster_res/2 +max_distance),
+                 ymin = floor(y0 - raster_res/2 - max_distance), 
+                 ymax = ceiling(y0 + raster_res/2 +max_distance),
+                 resolution = raster_res, vals = 0)
   
   # Observer height
   height0 <- as.numeric(terra::extract(dtm_rast, cbind(x0, y0))) + observer_height
   
   # If the resolution parameter differs from the input-DSM resolution,
   # resample the DSM to the lower resolution.
-  if (resolution == min(terra::res(dsm_rast))) {
+  if (raster_res == min(terra::res(dsm_rast))) {
     dsm_rast_masked <- terra::crop(dsm_rast, output)
   } else {
     terra::terraOptions(progress = 0)
     dsm_rast_masked <- terra::crop(dsm_rast, output) %>% 
-      terra::aggregate(fact = resolution/terra::res(.))
+      terra::aggregate(fact = raster_res/terra::res(.))
     terra::terraOptions(progress = 3)
   }
   
@@ -116,7 +116,7 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   dsm_cpp_rast <- terra::rast(dsm_rast_masked) %>% raster::raster()
   
   # Apply viewshed (C++) function
-  viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, c0, max_distance, height0)
+  viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, r0, max_distance, height0)
 
   # Copy result of lineOfSight to the output raster
   output[viewshed] <- 1
