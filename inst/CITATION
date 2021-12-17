@@ -1,0 +1,12 @@
+citHeader("To cite GVI in publications use:")
+
+citEntry(
+  entry    = "Manual",
+  title    = "GVI: R package for computing VGVI for Spatial Raster",
+  author   = c("Brinkmann S.T.", "Labib S.M."),
+  year     = "2021",
+  url      = "https://doi.org/10.5281/zenodo.5060325",
+  textVersion = paste(
+    "Brinkmann, S.T. and Labib, S.M. (2021). GVI: R package for computing VGVI for Spatial Raster. doi: 10.5281/zenodo.5060325."
+  )
+)

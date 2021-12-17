@@ -38,7 +38,7 @@ GVI can also be computed in Python, by [Jonny Huck](https://github.com/jonnyhuck
 |---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
 | [*viewshed*](#viewshed)                                             | Computes the viewshed of a single point on a Digital Surface Model                              |
 | [*visualizeWeights*](#visualize-weights)                            | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi_from_sf* functions |
-| [*vgvi_from_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Combines the *viewshed* and *vgvi* functions; Supports multiple points, lines or polygons       |
+| [*vgvi_from_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons       |
 
 ## Installation
 

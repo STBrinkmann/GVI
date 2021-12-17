@@ -29,11 +29,11 @@ Huck](https://github.com/jonnyhuck/green-visibility-index)
 
 ## Functions
 
-| Function                                                              | Description                                                                                       |
-|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| [*viewshed*](#viewshed)                                               | Computes the viewshed of a single point on a Digital Surface Model                                |
-| [*visualizeWeights*](#visualize-weights)                              | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi\_from\_sf* functions |
-| [*vgvi\_from\_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Combines the *viewshed* and *vgvi* functions; Supports multiple points, lines or polygons         |
+| Function                                                              | Description                                                                                                              |
+|-----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| [*viewshed*](#viewshed)                                               | Computes the viewshed of a single point on a Digital Surface Model                                                       |
+| [*visualizeWeights*](#visualize-weights)                              | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi\_from\_sf* functions                        |
+| [*vgvi\_from\_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons |
 
 ## Installation
 
@@ -236,20 +236,18 @@ Run this command to get info on how to cite this package.
 ``` r
 citation("GVI")
 #> 
-#> To cite package 'GVI' in publications use:
+#> To cite GVI in publications use:
 #> 
-#>   Sebastian Brinkmann and S.M. Labib (2021). GVI: R package for
-#>   computing VGVI for Spatial Raster. R package version 1.0.
-#>   https://github.com/STBrinkmann/GVI
+#>   Brinkmann, S.T. and Labib, S.M. (2021). GVI: R package for computing
+#>   VGVI for Spatial Raster. doi: 10.5281/zenodo.5060325.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {GVI: R package for computing VGVI for Spatial Raster},
-#>     author = {Sebastian Brinkmann and S.M. Labib},
+#>     author = {Brinkmann S.T. and Labib S.M.},
 #>     year = {2021},
-#>     note = {R package version 1.0},
-#>     url = {https://github.com/STBrinkmann/GVI},
+#>     url = {https://doi.org/10.5281/zenodo.5060325},
 #>   }
 ```
 
