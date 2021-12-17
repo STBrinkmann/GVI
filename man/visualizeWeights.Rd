@@ -7,7 +7,7 @@
 visualizeWeights(x, m = 0.5, b = 8, mode = c("logit", "exponential"))
 }
 \arguments{
-\item{x}{numeric or object of class \code{\link[terra]{SpatRaster}}; Either numeric, indicating the buffer distance or a \code{\link[terra]{SpatRaster}} of the \code{\link[GVI]{viewshed}} function.}
+\item{x}{numeric or object of class \code{\link[terra]{rast}}; Either numeric, indicating the buffer distance or a \code{\link[terra]{rast}} of the \code{\link[GVI]{viewshed}} function.}
 
 \item{m}{numeric; See ‘Details’.}
 
