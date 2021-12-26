@@ -20,6 +20,7 @@
 #' @importFrom sf st_coordinates
 #' @importFrom sf st_crs
 #' @importFrom sf st_geometry_type
+#' @importFrom sf st_make_grid
 #' @importFrom terra crs
 #' @importFrom terra extract
 #' @importFrom terra res
@@ -89,94 +90,99 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
   }
   rm(dsm_res)
   
+  
   #### 2. Prepare Data for viewshed analysis ####
-  if(progress) {
-    message("Preprocessing:")
-    pb = txtProgressBar(min = 0, max = 4, initial = 0, style = 2)
-  }
   # Max AOI
   max_aoi <- observer %>% 
     sf::st_bbox() %>% 
     sf::st_as_sfc() %>% 
-    sf::st_buffer(max_distance)
+    sf::st_buffer(max_distance) %>% 
+    sf::st_as_sf()
   
   max_aoi <- terra::vect(max_aoi) %>% 
     terra::crop(dsm_rast)
   
-  if (progress) setTxtProgressBar(pb, 1)
+  #### 3. Check RAM size ####
+  grid_fact <- rast_fits_vect_fact(max_aoi = max_aoi, dsm_rast = dsm_rast, max_distance = max_distance, raster_res = raster_res)
   
-  # Crop DSM to max AOI and change resolution
-  dsm_rast <- terra::crop(dsm_rast, max_aoi)
-  
-  
-  if(raster_res != min(raster::res(dsm_rast))) {
-    terra::terraOptions(progress = 0)
-    dsm_rast <- terra::aggregate(dsm_rast, fact = raster_res/terra::res(dsm_rast))
-    terra::terraOptions(progress = 3)
-  }
-  
-  if (progress) setTxtProgressBar(pb, 2)
-  
-  dsm_vec <- terra::values(dsm_rast, mat = FALSE)
-  dsm_cpp_rast <- dsm_rast %>% terra::rast() %>% raster::raster()
-  
-  if (progress) setTxtProgressBar(pb, 3)
-  
-  # Coordinates of start point
-  x0 <- sf::st_coordinates(observer)[,1]
-  y0 <- sf::st_coordinates(observer)[,2]
-  
-  # Observer heights
-  height_0_vec <- unlist(terra::extract(dtm_rast, cbind(x0, y0)), use.names = F) + observer_height
+  aoi_grid <- sf::st_make_grid(max_aoi, n = ifelse(grid_fact == 1, 1, grid_fact*4))
   
   
-  #### 3. Remove points outside the DSM or DTM ####
-  invalid_points <- unique(c(
-    which(is.na(terra::extract(dsm_rast, cbind(x0, y0)))), # points outside the DSM
-    which(is.na(height_0_vec)) # points outside the DTM
-  ))
+  #### 4. Main loop ####
+  distance_tbl <- tibble(
+    Distance = as.integer(),
+    Visible_perc = as.double()
+  )
   
-  # Remove invalid points
-  if (length(invalid_points) > 0) {
-    observer <- observer[-invalid_points, ]
-    x0 <- x0[-invalid_points]
-    y0 <- y0[-invalid_points]
-    height_0_vec <- height_0_vec[-invalid_points]
-  }
-  
-  if (progress) {
-    setTxtProgressBar(pb, 4)
-    cat("\n")
-  }
-  if (length(invalid_points) == 1) {
-    message("1 point has been removed, because it was outside of the DSM or DTM")
-  } else if (length(invalid_points) > 1) {
-    message(paste(length(invalid_points), "points have been removed, because they were outside of the DSM or DTM"))
-  }
-  
-  #### 4. Compute viewshed ####
-  # Start row/col
-  r0 <- terra::rowFromY(dsm_rast, y0)
-  c0 <- terra::colFromX(dsm_rast, x0)
-  
-  # Apply viewshed (C++) function
-  if (progress) {
-    cat("\n")
-    message(paste0("Computing Distance Analysis for ", nrow(observer), ifelse(nrow(observer)>1, " points:", " point:")))
-    cat("\n")
+  if(progress) {
+    message("Progress:")
+    pb = txtProgressBar(min = 0, max = length(aoi_grid), initial = 0, style = 3)
     start_time <- Sys.time()
   }
-  distance_tbl <- viewshed_distance_analysis_cpp(dsm_cpp_rast, dsm_vec,
-                                                 c0, r0, max_distance, height_0_vec,
-                                                 cores, progress)
-  colnames(distance_tbl) <- c("V1", "V2", "V3")
-  
-  distance_tbl <- distance_tbl %>%
-    dplyr::as_tibble() %>%
-    dplyr::mutate(Visible_perc = V3 / V2) %>%
-    dplyr::rename(Distance = V1) %>%
-    dplyr::select(Distance, Visible_perc)
-  
+  for (i in seq_along(aoi_grid)) {
+    if (progress) setTxtProgressBar(pb, i)
+    
+    this_aoi <- aoi_grid[i]
+    this_observer <- observer[this_aoi,]
+    
+    #### 1. Crop DSM to max AOI and change resolution ####
+    this_rast <- dsm_rast %>% 
+      terra::crop(terra::vect(sf::st_buffer(this_aoi, max_distance)))
+    
+    if(raster_res != min(raster::res(this_rast))) {
+      terra::terraOptions(progress = 0)
+      this_rast <- terra::aggregate(this_rast, fact = raster_res/terra::res(this_rast))
+      terra::terraOptions(progress = 3)
+    }
+    
+    # Convert to vector
+    dsm_vec <- terra::values(this_rast, mat = FALSE)
+    dsm_cpp_rast <- this_rast %>% terra::rast() %>% raster::raster()
+    
+    # Coordinates of start point
+    x0 <- sf::st_coordinates(this_observer)[,1]
+    y0 <- sf::st_coordinates(this_observer)[,2]
+    
+    # Observer heights
+    height_0_vec <- unlist(terra::extract(dtm_rast, cbind(x0, y0)), use.names = F) + observer_height
+    
+    #### 2. Remove points outside the DSM or DTM ####
+    invalid_points <- unique(c(
+      which(is.na(terra::extract(this_rast, cbind(x0, y0)))), # points outside the DSM
+      which(is.na(height_0_vec)) # points outside the DTM
+    ))
+    
+    # Remove invalid points
+    if (length(invalid_points) > 0) {
+      observer <- observer[-invalid_points, ]
+      x0 <- x0[-invalid_points]
+      y0 <- y0[-invalid_points]
+      height_0_vec <- height_0_vec[-invalid_points]
+    }
+    
+    # Skip if all values are NaN
+    if(length(x0) == 0) next
+    
+    #### 3. Compute viewshed ####
+    # Start row/col
+    r0 <- terra::rowFromY(this_rast, y0)
+    c0 <- terra::colFromX(this_rast, x0)
+    
+    this_distance_tbl <- viewshed_distance_analysis_cpp(dsm_cpp_rast, dsm_vec,
+                                                        c0, r0, max_distance, height_0_vec,
+                                                        ifelse(length(x0) > cores, cores, length(x0)),
+                                                        ifelse(length(aoi_grid) > 1, FALSE, progress))
+    colnames(this_distance_tbl) <- c("V1", "V2", "V3")
+    
+    this_distance_tbl <- this_distance_tbl %>%
+      dplyr::as_tibble() %>%
+      dplyr::mutate(Visible_perc = V3 / V2) %>%
+      dplyr::rename(Distance = V1) %>%
+      dplyr::select(Distance, Visible_perc)
+    
+    distance_tbl <- dplyr::add_row(distance_tbl, this_distance_tbl)
+    rm(dsm_vec); invisible(gc())
+  }
   
   if (progress) {
     time_dif <- round(cores * ((as.numeric(difftime(Sys.time(), start_time, units = "s"))*1000) / nrow(observer)), 2)
@@ -198,22 +204,5 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     
     message(paste("Average time for a single point:", time_dif, "milliseconds"))
   }
-  
-  #### 5. Compare DSM with Visibility ####
-  if (plot) {
-    cat("\n")
-    message("Building Plot...")
-    
-    p <- distance_tbl %>% 
-      ggplot2::ggplot(ggplot2::aes(x = Distance, y = Visible_perc)) + 
-      ggplot2::geom_smooth(formula = y ~ s(x, bs = "cs"), method = "gam") +
-      #ggplot2::geom_line() +
-      ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-      ggplot2::labs(x = "Distance [m]", y = "Visibility [%]") +
-      ggplot2::theme_light()    
-    print(p)
-  }
-  
-  rm(dsm_vec); invisible(gc())
   return(distance_tbl)
 }
