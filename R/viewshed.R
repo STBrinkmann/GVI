@@ -48,6 +48,7 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   } else if (!as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) == "POINT") {
     stop("observer has no valid geometry")
   } else if (nrow(observer) > 1) {
+    observer <- observer[1,]
     warning("Only the fist point of observer will be used. Please look into the vgvi_from_sf function")
   }
   
@@ -85,12 +86,12 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   y0 <- sf::st_coordinates(observer)[2]
   
   # AOI
-  output <- rast(crs = crs(dsm_rast),
-                 xmin = floor(x0 - raster_res/2 - max_distance), 
-                 xmax = ceiling(x0 + raster_res/2 +max_distance),
-                 ymin = floor(y0 - raster_res/2 - max_distance), 
-                 ymax = ceiling(y0 + raster_res/2 +max_distance),
-                 resolution = raster_res, vals = 0)
+  output <- terra::rast(crs = terra::crs(dsm_rast),
+                        xmin = floor(x0 - raster_res/2 - max_distance), 
+                        xmax = ceiling(x0 + raster_res/2 + max_distance),
+                        ymin = floor(y0 - raster_res/2 - max_distance), 
+                        ymax = ceiling(y0 + raster_res/2 + max_distance),
+                        resolution = raster_res, vals = 0)
   
   # Observer height
   height0 <- as.numeric(terra::extract(dtm_rast, cbind(x0, y0))) + observer_height
