@@ -21,7 +21,7 @@ visualizeWeights <- function(x, m = 0.5, b = 8, mode = c("logit", "exponential")
       terra::xyFromCell(which(x[] == 1))
     
     # Calculate maximum distance
-    max_dist = (terra::nrow(x)/2) * res(x)[1]
+    max_dist = (terra::nrow(x)/2) * terra::res(x)[1]
   } else if (is.numeric(x)) {
     max_dist <- x
   } else {
