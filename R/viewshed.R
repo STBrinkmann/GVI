@@ -80,6 +80,11 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   }
   rm(dsm_res)
   
+  # observer inside DSM
+  if(is.na(terra::cellFromXY(object = DSM, xy = sf::st_coordinates(observer)))) {
+    stop("observer outside DSM")
+  }
+  
   #### 2. Prepare Data for viewshed analysis ####
   # Coordinates of start point
   x0 <- sf::st_coordinates(observer)[1]
@@ -91,7 +96,8 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
                         xmax = ceiling(x0 + raster_res/2 + max_distance),
                         ymin = floor(y0 - raster_res/2 - max_distance), 
                         ymax = ceiling(y0 + raster_res/2 + max_distance),
-                        resolution = raster_res, vals = 0)
+                        resolution = raster_res, vals = 0) %>% 
+    terra::crop(dsm_rast)
   
   # Observer height
   height0 <- as.numeric(terra::extract(dtm_rast, cbind(x0, y0))) + observer_height
