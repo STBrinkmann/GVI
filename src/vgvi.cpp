@@ -43,7 +43,7 @@ Rcpp::NumericVector VGVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_value
     viewshed[c0_ref] = input_cells[k]+1;
     
     // A. Viewshed Analysis
-    {
+    if(h0[k] > dsm_values[input_cells[k]]) {
       Rcpp::NumericVector max_tan_vec(r);
       int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
       
@@ -174,6 +174,7 @@ Rcpp::NumericVector VGVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_value
     
     output[k] = vgvi_sum;
   }
+  
   return output;
 }
 
@@ -208,46 +209,48 @@ Rcpp::IntegerVector viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_v
   Rcpp::IntegerVector viewshed(nc_ref*nr_ref, NA_INTEGER);
   viewshed[c0_ref] = input_cells[k]+1;
   
-  // 3. Viewshed Analysis
-  Rcpp::NumericVector max_tan_vec(r);
-  int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
-  
-  for(int i = 0; i < (r*8); i++){
-    // Re-use tangents calculated for prior LoS
-    int k_i = 0;
-    if(i > 0){
-      for(int j = 0; j < r; j++){
-        k_i = j;
-        if(los_ref_vec[i*r + j] != los_ref_vec[(i-1)*r + j]){
-          break;
-        }
-      }
-    }
-    double max_tan = (k_i > 1) ? max_tan_vec[k_i-1] : -9999.0;
+  if(h0[k] > dsm_values[input_cells[k]]){
+    // 3. Viewshed Analysis
+    Rcpp::NumericVector max_tan_vec(r);
+    int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
     
-    
-    for(int j = k_i; j < r; j++){
-      const int los_ref_cell = los_ref_vec[i*r + j];
-      if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
-        // Project reference cells to actual cell value
-        const int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
-        const int row = trunc(cell/ras.ncol);
-        const int col = cell - (row * ras.ncol);
-        const int dcol = abs(col-x0_o[k]);
-        
-        if(!(cell<0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
-          // Compute tangents of LoS_vec and update output
-          const double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
-          const double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);
-          
-          if(this_tan > max_tan){
-            max_tan = this_tan;
-            viewshed[los_ref_cell] = cell+1;
+    for(int i = 0; i < (r*8); i++){
+      // Re-use tangents calculated for prior LoS
+      int k_i = 0;
+      if(i > 0){
+        for(int j = 0; j < r; j++){
+          k_i = j;
+          if(los_ref_vec[i*r + j] != los_ref_vec[(i-1)*r + j]){
+            break;
           }
         }
-        max_tan_vec[j] = max_tan;
-      } else {
-        break;
+      }
+      double max_tan = (k_i > 1) ? max_tan_vec[k_i-1] : -9999.0;
+      
+      
+      for(int j = k_i; j < r; j++){
+        const int los_ref_cell = los_ref_vec[i*r + j];
+        if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
+          // Project reference cells to actual cell value
+          const int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
+          const int row = trunc(cell/ras.ncol);
+          const int col = cell - (row * ras.ncol);
+          const int dcol = abs(col-x0_o[k]);
+          
+          if(!(cell<0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
+            // Compute tangents of LoS_vec and update output
+            const double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
+            const double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);
+            
+            if(this_tan > max_tan){
+              max_tan = this_tan;
+              viewshed[los_ref_cell] = cell+1;
+            }
+          }
+          max_tan_vec[j] = max_tan;
+        } else {
+          break;
+        }
       }
     }
   }
@@ -307,47 +310,49 @@ Rcpp::IntegerMatrix viewshed_distance_analysis_cpp(Rcpp::S4 &dsm, const Rcpp::Nu
   // Main loop
   for(int k = 0; k < s; k++)
   {
-    // Viewshed Analysis
-    int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
+    if(h0[k] > dsm_values[input_cells[k]]){
+      // Viewshed Analysis
+      int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
     
 #if defined(_OPENMP)
     omp_set_num_threads(ncores);
 #pragma omp parallel for shared(output, x, k)
 #endif    
-    for(int i = 0; i < (r*8); i++){
-      if (!p.is_aborted()) {
-        Progress::check_abort();
-        
-        double max_tan = -9999.0;
-        
-        for(int j = 0; j < r; j++){
-          const int los_ref_cell = los_ref_vec[i*r + j];
-          if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
-            // Project reference cells to actual cell value
-            int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
-            int row = trunc(cell/ras.ncol);
-            int col = cell - (row * ras.ncol);
-            int dcol = abs(col-x0_o[k]);
-            
-            if(!(cell<0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
-              // Compute tangents of LoS_vec and update output
-              double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
-              double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);
+      for(int i = 0; i < (r*8); i++){
+        if (!p.is_aborted()) {
+          Progress::check_abort();
+          
+          double max_tan = -9999.0;
+          
+          for(int j = 0; j < r; j++){
+            const int los_ref_cell = los_ref_vec[i*r + j];
+            if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
+              // Project reference cells to actual cell value
+              int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
+              int row = trunc(cell/ras.ncol);
+              int col = cell - (row * ras.ncol);
+              int dcol = abs(col-x0_o[k]);
               
-              int d = round(distance_traveled) - 1;
-              
-              output( (d*s + k),1 ) += 1;
-              //output( d,1 ) += 1;
-              
-              if(this_tan > max_tan){
-                max_tan = this_tan;
+              if(!(cell < 0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
+                // Compute tangents of LoS_vec and update output
+                double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
+                double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);
                 
-                output( (d*s + k),2 ) += 1;
-                //output( d,2 ) += 1;
+                int d = round(distance_traveled) - 1;
+                
+                output( (d*s + k),1 ) += 1;
+                //output( d,1 ) += 1;
+                
+                if(this_tan > max_tan){
+                  max_tan = this_tan;
+                  
+                  output( (d*s + k),2 ) += 1;
+                  //output( d,2 ) += 1;
+                }
               }
+            } else {
+              break;
             }
-          } else {
-            break;
           }
         }
       }
