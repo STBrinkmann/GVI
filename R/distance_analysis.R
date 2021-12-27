@@ -103,7 +103,7 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     terra::crop(dsm_rast)
   
   #### 3. Check RAM size ####
-  grid_fact <- rast_fits_vect_fact(max_aoi = max_aoi, dsm_rast = dsm_rast, max_distance = max_distance, raster_res = raster_res)
+  grid_fact <- rast_fits_vect_fact(max_aoi = max_aoi, max_distance = max_distance, raster_res = raster_res)
   
   aoi_grid <- sf::st_make_grid(max_aoi, n = ifelse(grid_fact == 1, 1, grid_fact*4))
   
