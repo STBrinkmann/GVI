@@ -116,11 +116,14 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
   
   if(progress) {
     message("Progress:")
-    pb = txtProgressBar(min = 0, max = length(aoi_grid), initial = 0, style = 3)
+    
+    if(length(aoi_grid) > 1) {
+      pb = txtProgressBar(min = 0, max = length(aoi_grid), initial = 0, style = 3)
+    }
     start_time <- Sys.time()
   }
   for (i in seq_along(aoi_grid)) {
-    if (progress) setTxtProgressBar(pb, i)
+    if ( progress && (length(aoi_grid) > 1) ) setTxtProgressBar(pb, i)
     
     this_aoi <- aoi_grid[i]
     this_observer <- observer[this_aoi,]
