@@ -81,8 +81,8 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   rm(dsm_res)
   
   # observer inside DSM
-  if(is.na(terra::cellFromXY(object = DSM, xy = sf::st_coordinates(observer)))) {
-    stop("observer outside DSM")
+  if(is.na(terra::cellFromXY(object = dsm_rast, xy = sf::st_coordinates(observer)))) {
+    stop("observer outside dsm_rast")
   }
   
   #### 2. Prepare Data for viewshed analysis ####
