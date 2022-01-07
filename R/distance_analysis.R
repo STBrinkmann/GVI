@@ -247,7 +247,7 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NU
         dplyr::mutate(Visible_perc = V3 / V2,
                       Proportion_of_all_Green = V4 / V2,
                       Proportion_of_visible_Green = V5 / V2,
-                      VGVI = V5 / V4) %>%
+                      VGVI = V5 / V3) %>%
         dplyr::rename(Distance = V1) %>%
         dplyr::select(Distance, Visible_perc,
                       Proportion_of_all_Green, Proportion_of_visible_Green, VGVI)
@@ -256,27 +256,6 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NU
     }
     
     distance_tbl <- dplyr::add_row(distance_tbl, this_distance_tbl)
-  }
-  
-  if (progress) {
-    time_dif <- round(cores * ((as.numeric(difftime(Sys.time(), start_time, units = "s"))*1000) / nrow(observer)), 2)
-    cat("\n")
-    
-    time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "m")))
-    if(time_total < 1){
-      time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))
-      
-      if(time_total < 1){
-        time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))*1000
-        message(paste("Total runtime:", time_total, " milliseconds"))
-      } else {
-        message(paste("Total runtime:", time_total, " seconds"))
-      }
-    } else {
-      message(paste("Total runtime:", time_total, " minutes"))
-    }
-    
-    message(paste("Average time for a single point:", time_dif, "milliseconds"))
   }
   return(distance_tbl)
 }
