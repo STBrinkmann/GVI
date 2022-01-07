@@ -48,7 +48,7 @@
 #' @importFrom ggplot2 theme_light
 #' @importFrom scales percent_format
 
-distance_analysis <- function(observer, dsm_rast, dtm_rast, 
+distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NULL,
                      max_distance = 800, observer_height = 1.7, 
                      raster_res = NULL, plot = FALSE,
                      progress = FALSE, cores = 1) {
@@ -56,8 +56,8 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
   # observer
   if (!is(observer, "sf")) {
     stop("observer must be a sf object")
-  } else if (sf::st_crs(observer)$units != "m") {
-    stop("observer CRS unit needs to be metric")
+  } else if (sf::st_crs(observer)$units_gdal == "degree") {
+    stop("observer CRS unit must not be degree")
   } else if (!as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) %in% c("POINT", "MULTIPOINT")) {
     stop("observer must be POINT")
   }
@@ -67,6 +67,8 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     stop("dsm_rast must be a SpatRaster object")
   } else if (sf::st_crs(terra::crs(dsm_rast))$epsg != sf::st_crs(observer)$epsg) {
     stop("dsm_rast must have the same CRS as observer")
+  } else if(dsm_rast@ptr$res[1] != dsm_rast@ptr$res[2]) {
+    stop("dsm_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
   }
   
   # dtm_rast
@@ -74,6 +76,21 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     stop("dtm_rast must be a SpatRaster object")
   } else if (sf::st_crs(terra::crs(dtm_rast))$epsg != sf::st_crs(observer)$epsg) {
     stop("dtm_rast must have the same CRS as observer")
+  }
+  
+  # greenspace_rast
+  if(!is.null(greenspace_rast)){
+    if (!is(greenspace_rast, "SpatRaster")) {
+      stop("greenspace_rast needs to be a SpatRaster object!")
+    } else if (sf::st_crs(terra::crs(greenspace_rast))$epsg != sf::st_crs(observer)$epsg) {
+      stop("greenspace_rast needs to have the same CRS as observer")
+    } else if(greenspace_rast@ptr$res[1] != greenspace_rast@ptr$res[2]) {
+      stop("greenspace_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
+    }
+    
+    if(cores > 1){
+      message("Currently multithreading for analysing greenspace is not supported.")
+    }
   }
   
   # max_distance
@@ -109,10 +126,20 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
   
   
   #### 4. Main loop ####
-  distance_tbl <- tibble(
-    Distance = as.integer(),
-    Visible_perc = as.double()
-  )
+  if(is.null(greenspace_rast)){
+    distance_tbl <- tibble(
+      Distance = as.integer(),
+      Visible_perc = as.double()
+    )
+  } else {
+    distance_tbl <- tibble(
+      Distance = as.integer(),
+      Visible_perc = as.double(),
+      Proportion_of_all_Green = as.double(),
+      Proportion_of_visible_Green = as.double(),
+      VGVI = as.double()
+    )
+  }
   
   if(progress) {
     message("Progress:")
@@ -129,18 +156,27 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     this_observer <- observer[this_aoi,]
     
     #### 1. Crop DSM to max AOI and change resolution ####
-    this_rast <- dsm_rast %>% 
+    this_dsm_rast <- dsm_rast %>% 
       terra::crop(terra::vect(sf::st_buffer(this_aoi, max_distance)))
     
-    if(raster_res != min(raster::res(this_rast))) {
+    
+    if(raster_res != min(raster::res(this_dsm_rast))) {
       terra::terraOptions(progress = 0)
-      this_rast <- terra::aggregate(this_rast, fact = raster_res/terra::res(this_rast))
+      this_dsm_rast <- terra::aggregate(this_dsm_rast, fact = raster_res/terra::res(this_dsm_rast))
       terra::terraOptions(progress = 3)
     }
     
-    # Convert to vector
-    dsm_vec <- terra::values(this_rast, mat = FALSE)
-    dsm_cpp_rast <- this_rast %>% terra::rast() %>% raster::raster()
+    # Convert to vector and raster::raster
+    dsm_vec <- terra::values(this_dsm_rast, mat = FALSE)
+    dsm_cpp_rast <- this_dsm_rast %>% terra::rast() %>% raster::raster()
+    
+    if(!is.null(greenspace_rast)){
+      this_greenspace_rast <- greenspace_rast %>% 
+        terra::crop(terra::vect(sf::st_buffer(this_aoi, max_distance)))
+      
+      greenspace_vec <- terra::values(this_greenspace_rast, mat = FALSE)
+      greenspace_cpp_rast <- this_greenspace_rast %>% terra::rast() %>% raster::raster()
+    }
     
     # Coordinates of start point
     x0 <- sf::st_coordinates(this_observer)[,1]
@@ -151,7 +187,7 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     
     #### 2. Remove points outside the DSM or DTM ####
     invalid_points <- unique(c(
-      which(is.na(terra::extract(this_rast, cbind(x0, y0)))), # points outside the DSM
+      which(is.na(terra::extract(this_dsm_rast, cbind(x0, y0)))), # points outside the DSM
       which(is.na(height_0_vec)) # points outside the DTM
     ))
     
@@ -168,23 +204,58 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast,
     
     #### 3. Compute viewshed ####
     # Start row/col
-    r0 <- terra::rowFromY(this_rast, y0)
-    c0 <- terra::colFromX(this_rast, x0)
+    r0 <- terra::rowFromY(this_dsm_rast, y0)
+    c0 <- terra::colFromX(this_dsm_rast, x0)
     
-    this_distance_tbl <- viewshed_distance_analysis_cpp(dsm_cpp_rast, dsm_vec,
-                                                        c0, r0, max_distance, height_0_vec,
-                                                        ifelse(length(x0) > cores, cores, length(x0)),
-                                                        ifelse(length(aoi_grid) > 1, FALSE, progress))
-    colnames(this_distance_tbl) <- c("V1", "V2", "V3")
-    
-    this_distance_tbl <- this_distance_tbl %>%
-      dplyr::as_tibble() %>%
-      dplyr::mutate(Visible_perc = V3 / V2) %>%
-      dplyr::rename(Distance = V1) %>%
-      dplyr::select(Distance, Visible_perc)
+    if(is.null(greenspace_rast)){
+      this_distance_tbl <- viewshed_distance_analysis_cpp(
+        dsm_cpp_rast, dsm_vec,
+        c0, r0, max_distance, height_0_vec,
+        ifelse(length(x0) > cores, cores, length(x0)),
+        ifelse(length(aoi_grid) > 1, FALSE, progress)
+      )
+      
+      # v1: Distance
+      # V2: Total number of cells per distance
+      # V3: Number of all visible cells per distance
+      colnames(this_distance_tbl) <- c("V1", "V2", "V3")
+      
+      this_distance_tbl <- this_distance_tbl %>%
+        dplyr::as_tibble() %>%
+        dplyr::mutate(Visible_perc = V3 / V2) %>%
+        dplyr::rename(Distance = V1) %>%
+        dplyr::select(Distance, Visible_perc)
+      
+      rm(dsm_vec); invisible(gc())
+    } else {
+      this_distance_tbl <- viewshed_and_greenness_distance_analysis_cpp(
+        dsm_cpp_rast, dsm_vec,
+        greenspace_cpp_rast, greenspace_vec,
+        c0, r0, max_distance, height_0_vec,
+        ifelse(length(aoi_grid) > 1, FALSE, progress)
+      )
+      
+      # v1: Distance
+      # V2: Total number of cells per distance
+      # V3: Number of all visible cells per distance
+      # V4: Total number of green cells per distance
+      # V5: Number of green visible cells per distance
+      colnames(this_distance_tbl) <- c("V1", "V2", "V3", "V4", "V5")
+      
+      this_distance_tbl <- this_distance_tbl %>%
+        dplyr::as_tibble() %>%
+        dplyr::mutate(Visible_perc = V3 / V2,
+                      Proportion_of_all_Green = V4 / V2,
+                      Proportion_of_visible_Green = V5 / V2,
+                      VGVI = V5 / V4) %>%
+        dplyr::rename(Distance = V1) %>%
+        dplyr::select(Distance, Visible_perc,
+                      Proportion_of_all_Green, Proportion_of_visible_Green, VGVI)
+      
+      rm(dsm_vec, greenspace_vec); invisible(gc())
+    }
     
     distance_tbl <- dplyr::add_row(distance_tbl, this_distance_tbl)
-    rm(dsm_vec); invisible(gc())
   }
   
   if (progress) {
