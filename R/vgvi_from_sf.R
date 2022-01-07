@@ -89,8 +89,8 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
   valid_sf_types <- c("POINT", "MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON")
   if (!is(observer, "sf")) {
     stop("observer must be a sf object")
-  } else if (is.null(sf::st_crs(observer)$units) || sf::st_crs(observer)$units != "m") {
-    stop("observer CRS unit needs to be metric")
+  } else if (is.null(sf::st_crs(observer)$units) || sf::st_crs(observer)$units_gdal == "degree") {
+    stop("observer CRS unit must not be degree")
   } else if (!as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) %in% valid_sf_types) {
     stop("observer has no valid geometry")
   } else if (as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) == "MULTIPOINT") {
@@ -103,6 +103,8 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     stop("dsm_rast needs to be a SpatRaster object!")
   } else if (sf::st_crs(terra::crs(dsm_rast))$epsg != sf::st_crs(observer)$epsg) {
     stop("dsm_rast needs to have the same CRS as observer")
+  } else if(dsm_rast@ptr$res[1] != dsm_rast@ptr$res[2]) {
+    stop("dsm_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
   }
   
   # dtm_rast
@@ -117,6 +119,8 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     stop("greenspace_rast needs to be a SpatRaster object!")
   } else if (sf::st_crs(terra::crs(greenspace_rast))$epsg != sf::st_crs(observer)$epsg) {
     stop("greenspace_rast needs to have the same CRS as observer")
+  } else if(dsm_rast@ptr$res[1] != dsm_rast@ptr$res[2]) {
+    stop("greenspace_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
   }
   
   # max_distance

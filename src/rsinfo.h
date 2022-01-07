@@ -16,6 +16,7 @@ struct RasterInfo {
     nrow = raster.slot("nrows");
     ncol = raster.slot("ncols");
     ncell = nrow*ncol;
+    res = (xmax - xmin)/ncol;
     
     if(raster.slot("rotated")) {
       Rcpp::stop("No current support for rotated rasters.");
@@ -23,13 +24,6 @@ struct RasterInfo {
       // Rcpp::NumericVector geotrans = rotation.slot("geotrans");
       // xres = geotrans[2];
       // yres = geotrans[4];
-    } else {
-      xres = (xmax - xmin)/ncol;
-      yres = (ymax - ymin)/nrow;
-      if(xres != yres) {
-        Rcpp::stop("No current support for different x and y resolution.");
-      }
-      res = xres;
     }
   }
 };

@@ -43,8 +43,8 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   # observer
   if (!is(observer, "sf")) {
     stop("observer must be a sf object")
-  } else if (sf::st_crs(observer)$units != "m") {
-    stop("observer CRS unit needs to be metric")
+  } else if (sf::st_crs(observer)$units_gdal == "degree") {
+    stop("observer CRS unit must not be degree")
   } else if (!as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) == "POINT") {
     stop("observer has no valid geometry")
   } else if (nrow(observer) > 1) {
@@ -57,6 +57,8 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
     stop("dsm_rast needs to be a SpatRaster object")
   } else if (sf::st_crs(terra::crs(dsm_rast))$epsg != sf::st_crs(observer)$epsg) {
     stop("dsm_rast needs to have the same CRS as observer")
+  } else if(dsm_rast@ptr$res[1] != dsm_rast@ptr$res[2]) {
+    stop("dsm_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
   }
   
   # dtm_rast
