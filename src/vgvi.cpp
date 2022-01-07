@@ -450,13 +450,17 @@ Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4 &dsm, 
                 d = (d >= r) ? (r-1) : d;
                 
                 output( (d*s + k),1 ) += 1;
-                if(greenspace_values[cell_gs] == 1) output( (d*s + k),3 ) += 1;
+                if(cell_gs != NA_INTEGER && greenspace_values[cell_gs] == 1){
+                  output( (d*s + k),3 ) += 1;  
+                }
                 
                 if(this_tan > max_tan){
                   max_tan = this_tan;
                   
                   output( (d*s + k),2 ) += 1;
-                  if(greenspace_values[cell_gs] == 1) output( (d*s + k),4 ) += 1;
+                  if(cell_gs != NA_INTEGER && greenspace_values[cell_gs] == 1){
+                    output( (d*s + k),4 ) += 1;  
+                  }
                 }
               }
             } else {
