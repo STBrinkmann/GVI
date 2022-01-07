@@ -88,7 +88,7 @@ Rcpp::NumericMatrix xyFromCell(Rcpp::S4 &raster, int cell) {
   return xyFromCell(raster, vcell);
 }
 
-Rcpp::IntegerVector cellFromXY (Rcpp::S4 &raster, Rcpp::NumericMatrix xy) {
+Rcpp::IntegerVector cellFromXY(Rcpp::S4 &raster, Rcpp::NumericMatrix xy) {
   // size of x and y should be the same
   RasterInfo ras(raster);
   
@@ -119,4 +119,33 @@ Rcpp::IntegerVector cellFromXY (Rcpp::S4 &raster, Rcpp::NumericMatrix xy) {
   }
   
   return cells;
+}
+
+int cellFromXY2(Rcpp::S4 &raster, double x, double y) {
+  RasterInfo ras(raster);
+  
+  int cell;
+  
+  double yr_inv = ras.nrow / (ras.ymax - ras.ymin);
+  double xr_inv = ras.ncol / (ras.xmax - ras.xmin);
+  
+  int row = floor((ras.ymax - y) * yr_inv);
+  // points in between rows go to the row below
+  // except for the last row, when they must go up
+  if (y == ras.ymin) {
+    row = ras.nrow-1 ;
+  }
+  
+  int col = floor((x - ras.xmin) * xr_inv);
+  // as for rows above. Go right, except for last column
+  if (x == ras.xmax) {
+    col = ras.ncol - 1 ;
+  }
+  if (row < 0 || row >= ras.nrow || col < 0 || col >= ras.ncol) {
+    cell = NA_INTEGER;
+  } else {
+    cell = row * ras.ncol + col;
+  }
+  
+  return cell;
 }

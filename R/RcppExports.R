@@ -13,3 +13,7 @@ viewshed_distance_analysis_cpp <- function(dsm, dsm_values, x0, y0, radius, h0, 
     .Call(`_GVI_viewshed_distance_analysis_cpp`, dsm, dsm_values, x0, y0, radius, h0, ncores, display_progress)
 }
 
+viewshed_and_greenness_distance_analysis_cpp <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, display_progress = FALSE) {
+    .Call(`_GVI_viewshed_and_greenness_distance_analysis_cpp`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, display_progress)
+}
+

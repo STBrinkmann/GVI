@@ -9,6 +9,7 @@ extern Rcpp::IntegerVector cellFromColRow(const Rcpp::IntegerVector &x, const Rc
 extern Rcpp::IntegerMatrix colRowFromCell(const Rcpp::IntegerVector &cell, const int ncol);
 extern Rcpp::NumericMatrix xyFromCell(Rcpp::S4 &raster, const Rcpp::IntegerVector &cell);
 extern Rcpp::NumericMatrix xyFromCell(Rcpp::S4 &raster, int cell);
-extern Rcpp::IntegerVector cellFromXY (Rcpp::S4 &raster, Rcpp::NumericMatrix xy);
+extern Rcpp::IntegerVector cellFromXY(Rcpp::S4 &raster, Rcpp::NumericMatrix xy);
+extern int cellFromXY2(Rcpp::S4 &raster, double x, double y);
 
 #endif
