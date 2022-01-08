@@ -370,7 +370,7 @@ Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4 &dsm, 
                                                                  Rcpp::S4 &greenspace, const Rcpp::NumericVector &greenspace_values,
                                                                  const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0,
                                                                  const int radius, const Rcpp::NumericVector & h0,
-                                                                 const bool display_progress=false)
+                                                                 const int ncores=1, const bool display_progress=false)
 {
   // Cells from x0,y0
   Rcpp::IntegerVector x0_o = x0-1;
@@ -379,6 +379,7 @@ Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4 &dsm, 
   
   // Basic raster information
   const RasterInfo ras(dsm);
+  const RasterInfo gs_ras(greenspace);
   
   // Parameters
   const int r = (int)(radius/ras.res);
@@ -410,6 +411,10 @@ Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4 &dsm, 
   Progress p(s, display_progress);
   
   // Main loop
+#if defined(_OPENMP)
+  omp_set_num_threads(ncores);
+#pragma omp parallel for shared(output)
+#endif
   for(int k = 0; k < s; k++)
   {
     if(h0[k] > dsm_values[input_cells[k]]){
@@ -424,7 +429,7 @@ Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4 &dsm, 
           
           for(int j = 0; j < r; j++){
             const int los_ref_cell = los_ref_vec[i*r + j];
-            if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
+            if(los_ref_cell != NA_INTEGER){ //!Rcpp::IntegerVector::is_na(los_ref_cell)
               // Project reference cells to actual cell value
               int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
               
@@ -438,9 +443,14 @@ Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4 &dsm, 
               double y_j = ras.ymax - (row + 0.5) * ras.res;
               
               // Cell of greenspace raster
-              int cell_gs = cellFromXY2(greenspace, x_j, y_j);
+              // OpenMP can't call cellFromXY2 function without causing R to crash.
+              // Therefore, I'll calcualte the cell here manually
+              int cell_gs = cellFromXY2(gs_ras, x_j, y_j);
               
-              if(!(cell < 0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
+              
+              
+              
+              if(!(cell < 0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){ 
                 // Compute tangents of LoS_vec and update output
                 double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
                 double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);

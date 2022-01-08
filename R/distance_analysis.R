@@ -87,10 +87,6 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NU
     } else if(greenspace_rast@ptr$res[1] != greenspace_rast@ptr$res[2]) {
       stop("greenspace_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
     }
-    
-    if(cores > 1){
-      message("Currently multithreading for analysing greenspace is not supported.")
-    }
   }
   
   # max_distance
@@ -127,12 +123,12 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NU
   
   #### 4. Main loop ####
   if(is.null(greenspace_rast)){
-    distance_tbl <- tibble(
+    distance_tbl <- dplyr::tibble(
       Distance = as.integer(),
       Visible_perc = as.double()
     )
   } else {
-    distance_tbl <- tibble(
+    distance_tbl <- dplyr::tibble(
       Distance = as.integer(),
       Visible_perc = as.double(),
       Proportion_of_all_Green = as.double(),
@@ -232,6 +228,7 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NU
         dsm_cpp_rast, dsm_vec,
         greenspace_cpp_rast, greenspace_vec,
         c0, r0, max_distance, height_0_vec,
+        ifelse(length(x0) > cores, cores, length(x0)),
         ifelse(length(aoi_grid) > 1, FALSE, progress)
       )
       

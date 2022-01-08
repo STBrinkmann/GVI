@@ -66,8 +66,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // viewshed_and_greenness_distance_analysis_cpp
-Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, Rcpp::S4& greenspace, const Rcpp::NumericVector& greenspace_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0, const bool display_progress);
-RcppExport SEXP _GVI_viewshed_and_greenness_distance_analysis_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP greenspaceSEXP, SEXP greenspace_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP, SEXP display_progressSEXP) {
+Rcpp::IntegerMatrix viewshed_and_greenness_distance_analysis_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, Rcpp::S4& greenspace, const Rcpp::NumericVector& greenspace_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0, const int ncores, const bool display_progress);
+RcppExport SEXP _GVI_viewshed_and_greenness_distance_analysis_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP greenspaceSEXP, SEXP greenspace_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -79,8 +79,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type y0(y0SEXP);
     Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
+    Rcpp::traits::input_parameter< const int >::type ncores(ncoresSEXP);
     Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(viewshed_and_greenness_distance_analysis_cpp(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, display_progress));
+    rcpp_result_gen = Rcpp::wrap(viewshed_and_greenness_distance_analysis_cpp(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, ncores, display_progress));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -89,7 +90,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_GVI_VGVI_cpp", (DL_FUNC) &_GVI_VGVI_cpp, 11},
     {"_GVI_viewshed_cpp", (DL_FUNC) &_GVI_viewshed_cpp, 6},
     {"_GVI_viewshed_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_distance_analysis_cpp, 8},
-    {"_GVI_viewshed_and_greenness_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_and_greenness_distance_analysis_cpp, 9},
+    {"_GVI_viewshed_and_greenness_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_and_greenness_distance_analysis_cpp, 10},
     {NULL, NULL, 0}
 };
 

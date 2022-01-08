@@ -121,9 +121,8 @@ Rcpp::IntegerVector cellFromXY(Rcpp::S4 &raster, Rcpp::NumericMatrix xy) {
   return cells;
 }
 
-int cellFromXY2(Rcpp::S4 &raster, double x, double y) {
-  RasterInfo ras(raster);
-  
+int cellFromXY2(RasterInfo ras, double x, double y) {
+
   int cell;
   
   double yr_inv = ras.nrow / (ras.ymax - ras.ymin);
