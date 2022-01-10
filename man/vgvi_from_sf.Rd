@@ -25,11 +25,11 @@ vgvi_from_sf(
 \arguments{
 \item{observer}{object of class \code{sf}; Observer location(s) from where the VGVI should be computed. See ‘Details’ for valid sf geometry types}
 
-\item{dsm_rast}{character; File path to the DSM}
+\item{dsm_rast}{object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM}
 
-\item{dtm_rast}{character; File path to the DTM}
+\item{dtm_rast}{object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DTM}
 
-\item{greenspace_rast}{character; File path to the binary Greenspace mask. Values of the Greenspace mask must be 1 for Green and 0 for No-Green}
+\item{greenspace_rast}{object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the binary Greenspace mask. Values of the Greenspace mask must be 1 for Green and 0 for No-Green}
 
 \item{max_distance}{numeric; Buffer distance to calculate the viewshed}
 

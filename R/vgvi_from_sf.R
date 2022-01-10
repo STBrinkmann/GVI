@@ -4,9 +4,9 @@
 #' A distance decay function is applied, to account for the reducing visual prominence of an object in space with increasing distance from the observer.
 #'
 #' @param observer object of class \code{sf}; Observer location(s) from where the VGVI should be computed. See ‘Details’ for valid sf geometry types
-#' @param dsm_rast character; File path to the DSM
-#' @param dtm_rast character; File path to the DTM
-#' @param greenspace_rast character; File path to the binary Greenspace mask. Values of the Greenspace mask must be 1 for Green and 0 for No-Green
+#' @param dsm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM
+#' @param dtm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DTM
+#' @param greenspace_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the binary Greenspace mask. Values of the Greenspace mask must be 1 for Green and 0 for No-Green
 #' @param max_distance numeric; Buffer distance to calculate the viewshed
 #' @param observer_height numeric > 0; Height of the observer (e.g. 1.7 meters)
 #' @param raster_res optional; NULL or numeric > 0; Resolution that the GVI raster should be aggregated to. Needs to be a multible of the dsm_rast resolution
