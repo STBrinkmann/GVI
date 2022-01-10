@@ -1,17 +1,27 @@
 #' @title Viewshed Distance Analysis
-#' @description Since visibility changes with increasing distance, a threshold for the study area can be evaluated beyond which an observer can't see any terrain.
+#' @description Visibility changes with increasing distance, therefore a threshold for the study area can be evaluated beyond which an observer can't see any terrain.
 #' The \code{distance_analysis} function calculates the proportion of visible area for each distance value.
 #'
-#' @param observer object of class \code{sf} with POINT geometries; Observer location(s) from where the distance analysis should be computed. It's best to provide a sample of points within the complete study area, to evaluate the Visibility threshold of the study area.
+#' @param observer object of class \code{sf} with POINT geometries; Observer location(s) from where the distance analysis should be computed.
 #' @param max_distance numeric; Maximum buffer distance
 #' @param dsm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM
 #' @param dtm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DTM
+#' @param greenspace_rast optional; \code{\link[terra]{rast}} of the binary Greenspace mask. Values of the Greenspace mask must be 1 for Green and 0 for No-Green
 #' @param observer_height numeric > 0; Height of the observer (e.g. 1.7 meters)
 #' @param raster_res optional; NULL or numeric > 0; Resolution that the viewshed raster should be aggregated to. Must be a multible of the dsm_rast resolution
-#' @param plot optional; Plot (Visibility ~ Distance)
+#' @param summarise optional; Should the results be summarised over all observer locations?
 #' @param progress logical; Show progress bar and computation time?
 #' @param cores numeric; The number of cores to use
 #'
+#' @details If \code{greenspace_rast} is NULL only Visibility will be computet. Else, Greenspace and VGVI will be calculated, too.
+#' Visibility: Proportion of visible cells to all cells at each distance value (e.g. 1m, 2m, …).
+#' Example: 4 cells have a distance of 1m to the observer. Only 3 of them are visible, Visibility = 0.75
+#' 
+#' Greenspace: Proportion of green cells at each distance values, regardless of their visibility!
+#' Example: 4 cells have a distance of 1m to the observer. Only 2 of them are green, Greenspace = 0.50
+#' 
+#' VGVI: Proportion of visible green cells to all visible cells at each distance value.
+#' Example: 4 cells have a distance of 1m to the observer. 3 are visible but only 1 is visible green, VGVI = 0.33
 #' @return object of class \code{\link[tibble]{tibble}}
 #' @export
 #' 
@@ -50,7 +60,7 @@
 
 distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NULL,
                      max_distance = 800, observer_height = 1.7, 
-                     raster_res = NULL, plot = FALSE,
+                     raster_res = NULL, summarise = FALSE,
                      progress = FALSE, cores = 1) {
   #### 1. Check input ####
   # observer
