@@ -34,9 +34,9 @@
 #' @importFrom terra rast
 #' @importFrom raster raster
 
-resolution_analysis <- function(observer, dsm_rast, dtm_rast, 
+resolution_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NULL, 
                      max_distance = 800, observer_height = 1.7, 
-                     raster_res = NULL) {
+                     raster_res = NULL, progress = FALSE) {
   #### 1. Check input ####
   # observer
   if (!is(observer, "sf")) {
@@ -63,6 +63,17 @@ resolution_analysis <- function(observer, dsm_rast, dtm_rast,
     stop("dtm_rast needs to have the same CRS as observer")
   }
   
+  # greenspace_rast
+  if(!is.null(greenspace_rast)){
+    if (!is(greenspace_rast, "SpatRaster")) {
+      stop("greenspace_rast needs to be a SpatRaster object!")
+    } else if (sf::st_crs(terra::crs(greenspace_rast))$epsg != sf::st_crs(observer)$epsg) {
+      stop("greenspace_rast needs to have the same CRS as observer")
+    } else if(greenspace_rast@ptr$res[1] != greenspace_rast@ptr$res[2]) {
+      stop("greenspace_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
+    }
+  }
+  
   # max_distance
   max_distance <- round(max_distance, digits = 0)
   
@@ -85,12 +96,20 @@ resolution_analysis <- function(observer, dsm_rast, dtm_rast,
     Similarity = as.numeric(),
     Time = as.numeric()
   )
+  if(progress){
+    pb = txtProgressBar(min = 0, max = nrow(observer), initial = 0) 
+  }
   for (i in 1:nrow(observer)) {
     distance_tbl <- dplyr::tibble(
       Resolution = as.numeric(),
       Similarity = as.numeric(),
       Time = as.numeric()
     )
+    
+    if(progress){
+      setTxtProgressBar(pb,i) 
+    }
+    
     for(r in raster_res) {
       #### 2. Prepare Data for viewshed analysis ####
         
@@ -131,10 +150,32 @@ resolution_analysis <- function(observer, dsm_rast, dtm_rast,
       dsm_vec <- terra::values(dsm_rast_masked, mat = FALSE)
       dsm_cpp_rast <- terra::rast(dsm_rast_masked) %>% raster::raster()
       
-      time_a <- Sys.time()
+      if(!is.null(greenspace_rast)){
+        this_greenspace_rast <- greenspace_rast %>% 
+          terra::crop(aoi)
+        
+        greenspace_vec <- terra::values(this_greenspace_rast, mat = FALSE)
+        greenspace_cpp_rast <- this_greenspace_rast %>% terra::rast() %>% raster::raster()
+      }
+    
+      
       # Apply viewshed (C++) function
-      viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, r0, max_distance, height0)
-      time_b <- Sys.time()
+      if(is.null(greenspace_rast)){
+        time_a <- Sys.time()
+        viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, r0, max_distance, height0)
+        time_b <- Sys.time()
+      } else {
+        viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, r0, max_distance, height0)
+        
+        time_a <- Sys.time
+        vgvi <- VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
+                         greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
+                         x0 = c0, y0 = r0, radius = max_distance, h0 = height0,
+                         fun = 1, m = 0.5, b = 8)
+        time_b <- Sys.time()
+      }
+      
+      
       
       # Copy result of lineOfSight to the aoi raster
       aoi[viewshed] <- 1
