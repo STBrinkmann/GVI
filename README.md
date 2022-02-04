@@ -29,11 +29,12 @@ Huck](https://github.com/jonnyhuck/green-visibility-index)
 
 ## Functions
 
-| Function                                                              | Description                                                                                                              |
-|-----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| [*viewshed*](#viewshed)                                               | Computes the viewshed of a single point on a Digital Surface Model                                                       |
-| [*visualizeWeights*](#visualize-weights)                              | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi\_from\_sf* functions                        |
-| [*vgvi\_from\_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons |
+| Function                                                              | Description                                                                                                                            |
+|-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| [*viewshed*](#viewshed)                                               | Computes the viewshed of a single point on a Digital Surface Model                                                                     |
+| [*visualizeWeights*](#visualize-weights)                              | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi\_from\_sf* functions                                      |
+| [*vgvi\_from\_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons               |
+| sf\_to\_rast                                                          | Function for computing a continuous raster map from a sf object by interpolating the sf values using Inverse Distance Weighting (IDW). |
 
 ## Installation
 
@@ -84,7 +85,7 @@ prominence of an object in space with increasing distance from the
 observer. Currently two options are supported, a logistic and an
 exponential function.
 
-![ \\begin{align\*} f(x) = \\cfrac{1}{1 + e^{b(x-m)}} && \\text{(logistic)}\\\\ f(x) = \\cfrac{1}{1 + (bx^{m})} && \\text{(exponential)} \\end{align\*} ](https://latex.codecogs.com/svg.latex?%20%5Cbegin%7Balign%2A%7D%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20e%5E%7Bb%28x-m%29%7D%7D%20%26%26%20%5Ctext%7B%28logistic%29%7D%5C%5C%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20%28bx%5E%7Bm%7D%29%7D%20%26%26%20%5Ctext%7B%28exponential%29%7D%20%5Cend%7Balign%2A%7D%20 " \begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} ")
+![\\begin{align\*} f(x) = \\cfrac{1}{1 + e^{b(x-m)}} && \\text{(logistic)}\\\\ f(x) = \\cfrac{1}{1 + (bx^{m})} && \\text{(exponential)} \\end{align\*} ](https://latex.codecogs.com/svg.latex?%5Cbegin%7Balign%2A%7D%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20e%5E%7Bb%28x-m%29%7D%7D%20%26%26%20%5Ctext%7B%28logistic%29%7D%5C%5C%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20%28bx%5E%7Bm%7D%29%7D%20%26%26%20%5Ctext%7B%28exponential%29%7D%20%5Cend%7Balign%2A%7D%20 "\begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} ")
 
 ### Visualize Weights
 

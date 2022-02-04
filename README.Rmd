@@ -34,11 +34,12 @@ GVI can also be computed in Python, by [Jonny Huck](https://github.com/jonnyhuck
 
 ## Functions
 
-| Function                                                            | Description                                                                                     |
-|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| [*viewshed*](#viewshed)                                             | Computes the viewshed of a single point on a Digital Surface Model                              |
-| [*visualizeWeights*](#visualize-weights)                            | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi_from_sf* functions |
-| [*vgvi_from_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons       |
+| Function                                                            | Description                                                                                                                            |
+|---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| [*viewshed*](#viewshed)                                             | Computes the viewshed of a single point on a Digital Surface Model                                                                     |
+| [*visualizeWeights*](#visualize-weights)                            | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi_from_sf* functions                                        |
+| [*vgvi_from_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons               |
+| sf_to_rast                                                          | Function for computing a continuous raster map from a sf object by interpolating the sf values using Inverse Distance Weighting (IDW). |
 
 ## Installation
 
@@ -71,7 +72,7 @@ The VGVI expresses the proportion of visible greenness to the total visible area
 
 Based on a viewshed and a binary greenspace raster, all visible points are classified as visible green and visible no-green. All values are summarized using a decay function, to account for the reducing visual prominence of an object in space with increasing distance from the observer. Currently two options are supported, a logistic and an exponential function.
 
-$$ \begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} $$
+$$\begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} $$
 
 ### Visualize Weights
 
@@ -166,8 +167,7 @@ vgvi_sf <- vgvi_from_sf(observer = isodistance,
                         m = 1, b = 3, mode = "exponential", cores = 12)
 ```
 
-![](docs/VGVI_Isoline.PNG)
-*Output of the* `vgvi_from_sf` *function. Red points indicate low, green points indicate high values of VGVI. Paths and roads along the park tend to have high visible greenness, the road in the east has low visible greenness.*
+![](docs/VGVI_Isoline.PNG) *Output of the* `vgvi_from_sf` *function. Red points indicate low, green points indicate high values of VGVI. Paths and roads along the park tend to have high visible greenness, the road in the east has low visible greenness.*
 
 ```{r echo=FALSE}
 # Delete raw DTM, DSM and GreenSpace files
