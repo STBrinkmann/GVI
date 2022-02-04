@@ -264,5 +264,18 @@ distance_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = NU
     
     distance_tbl <- dplyr::add_row(distance_tbl, this_distance_tbl)
   }
+  
+  if(summarise){
+    distance_tbl <- distance_tbl %>% 
+      dplyr::group_by(Distance) %>% 
+      dplyr::summarise(
+        Visible_perc = mean(Visible_perc, na.rm = TRUE),
+        Proportion_of_all_Green = mean(Proportion_of_all_Green, na.rm = TRUE),
+        Proportion_of_visible_Green = mean(Proportion_of_visible_Green, na.rm = TRUE),
+        VGVI = mean(VGVI, na.rm = TRUE)
+      ) %>% 
+      dplyr::ungroup() %>% 
+      dplyr::filter(Distance > 1)
+  }
   return(distance_tbl)
 }
