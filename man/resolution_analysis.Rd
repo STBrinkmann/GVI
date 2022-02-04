@@ -8,9 +8,11 @@ resolution_analysis(
   observer,
   dsm_rast,
   dtm_rast,
+  greenspace_rast = NULL,
   max_distance = 800,
   observer_height = 1.7,
-  raster_res = NULL
+  raster_res = NULL,
+  progress = FALSE
 )
 }
 \arguments{
