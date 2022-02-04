@@ -10,6 +10,27 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// IDW_cpp
+NumericVector IDW_cpp(S4& rast, const NumericVector& x, const NumericVector& sf_x, const NumericVector& sf_y, const NumericVector& sf_z, const size_t n, const double b, const double radius, const int mode, const int ncores, const bool display_progress);
+RcppExport SEXP _GVI_IDW_cpp(SEXP rastSEXP, SEXP xSEXP, SEXP sf_xSEXP, SEXP sf_ySEXP, SEXP sf_zSEXP, SEXP nSEXP, SEXP bSEXP, SEXP radiusSEXP, SEXP modeSEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< S4& >::type rast(rastSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type sf_x(sf_xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type sf_y(sf_ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type sf_z(sf_zSEXP);
+    Rcpp::traits::input_parameter< const size_t >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< const double >::type radius(radiusSEXP);
+    Rcpp::traits::input_parameter< const int >::type mode(modeSEXP);
+    Rcpp::traits::input_parameter< const int >::type ncores(ncoresSEXP);
+    Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(IDW_cpp(rast, x, sf_x, sf_y, sf_z, n, b, radius, mode, ncores, display_progress));
+    return rcpp_result_gen;
+END_RCPP
+}
 // VGVI_cpp
 Rcpp::NumericVector VGVI_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, Rcpp::S4& greenspace, const Rcpp::NumericVector& greenspace_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0, const int fun, const double m, const double b);
 RcppExport SEXP _GVI_VGVI_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP greenspaceSEXP, SEXP greenspace_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP, SEXP funSEXP, SEXP mSEXP, SEXP bSEXP) {
@@ -87,6 +108,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_GVI_IDW_cpp", (DL_FUNC) &_GVI_IDW_cpp, 11},
     {"_GVI_VGVI_cpp", (DL_FUNC) &_GVI_VGVI_cpp, 11},
     {"_GVI_viewshed_cpp", (DL_FUNC) &_GVI_viewshed_cpp, 6},
     {"_GVI_viewshed_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_distance_analysis_cpp, 8},
