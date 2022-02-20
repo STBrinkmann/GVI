@@ -167,7 +167,7 @@ resolution_analysis <- function(observer, dsm_rast, dtm_rast, greenspace_rast = 
       } else {
         viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, r0, max_distance, height0)
         
-        time_a <- Sys.time
+        time_a <- Sys.time()
         vgvi <- VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
                          greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
                          x0 = c0, y0 = r0, radius = max_distance, h0 = height0,
