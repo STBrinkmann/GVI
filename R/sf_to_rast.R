@@ -44,7 +44,7 @@
 
 
 sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, beta = 2,
-                       raster_res = NULL, spacing = raster_res, cores = 1, progress = FALSE) {
+                       raster_res = NULL, spacing = raster_res, na_only = FALSE, cores = 1, progress = FALSE) {
   #### 1. Check input ####
   # observer
   valid_sf_types <- c("POINT", "MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON")
@@ -65,13 +65,16 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
   }
   
   # aoi
-  if (!is(aoi, "sf")) {
-    stop("aoi must be a sf object")
-  } else if (!as.character(sf::st_geometry_type(aoi, by_geometry = FALSE)) %in% c("POLYGON", "MULTIPOLYGON")) {
-    stop("observer must be POLYGON or MULTIPOLYGON")
-  } else if (sf::st_crs(aoi) != sf::st_crs(observer) ) {
-    aoi <- sf::st_transform(aoi, sf::st_crs(observer))
+  if(!is.null(aoi)){
+    if (!is(aoi, "sf")) {
+      stop("aoi must be a sf object")
+    } else if (!as.character(sf::st_geometry_type(aoi, by_geometry = FALSE)) %in% c("POLYGON", "MULTIPOLYGON")) {
+      stop("observer must be POLYGON or MULTIPOLYGON")
+    } else if (sf::st_crs(aoi) != sf::st_crs(observer) ) {
+      aoi <- sf::st_transform(aoi, sf::st_crs(observer))
+    }
   }
+  
   
   # max_distance
   mode = 1
@@ -132,7 +135,7 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
   if(!is.null(aoi)){
     observer <- observer[aoi,]
   } else {
-    aoi <- observer
+    aoi <- st_as_sfc(sf::st_bbox(observer))
   }
   
   # n
@@ -173,7 +176,7 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
                       sf_y = sf::st_coordinates(observer)[,2],
                       sf_z = dplyr::pull(observer, v),
                       n = n, b = beta, radius = max_distance, mode = mode,
-                      ncores = cores, display_progress = progress)
+                      na_only = na_only, ncores = cores, display_progress = progress)
   
   iwd_rast[] <- iwd_vals
   

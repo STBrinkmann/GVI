@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // IDW_cpp
-NumericVector IDW_cpp(S4& rast, const NumericVector& x, const NumericVector& sf_x, const NumericVector& sf_y, const NumericVector& sf_z, const size_t n, const double b, const double radius, const int mode, const int ncores, const bool display_progress);
-RcppExport SEXP _GVI_IDW_cpp(SEXP rastSEXP, SEXP xSEXP, SEXP sf_xSEXP, SEXP sf_ySEXP, SEXP sf_zSEXP, SEXP nSEXP, SEXP bSEXP, SEXP radiusSEXP, SEXP modeSEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
+NumericVector IDW_cpp(S4& rast, const NumericVector& x, const NumericVector& sf_x, const NumericVector& sf_y, const NumericVector& sf_z, const size_t n, const double b, const double radius, const int mode, const bool na_only, const int ncores, const bool display_progress);
+RcppExport SEXP _GVI_IDW_cpp(SEXP rastSEXP, SEXP xSEXP, SEXP sf_xSEXP, SEXP sf_ySEXP, SEXP sf_zSEXP, SEXP nSEXP, SEXP bSEXP, SEXP radiusSEXP, SEXP modeSEXP, SEXP na_onlySEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,9 +25,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type b(bSEXP);
     Rcpp::traits::input_parameter< const double >::type radius(radiusSEXP);
     Rcpp::traits::input_parameter< const int >::type mode(modeSEXP);
+    Rcpp::traits::input_parameter< const bool >::type na_only(na_onlySEXP);
     Rcpp::traits::input_parameter< const int >::type ncores(ncoresSEXP);
     Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(IDW_cpp(rast, x, sf_x, sf_y, sf_z, n, b, radius, mode, ncores, display_progress));
+    rcpp_result_gen = Rcpp::wrap(IDW_cpp(rast, x, sf_x, sf_y, sf_z, n, b, radius, mode, na_only, ncores, display_progress));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -108,7 +109,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_GVI_IDW_cpp", (DL_FUNC) &_GVI_IDW_cpp, 11},
+    {"_GVI_IDW_cpp", (DL_FUNC) &_GVI_IDW_cpp, 12},
     {"_GVI_VGVI_cpp", (DL_FUNC) &_GVI_VGVI_cpp, 11},
     {"_GVI_viewshed_cpp", (DL_FUNC) &_GVI_viewshed_cpp, 6},
     {"_GVI_viewshed_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_distance_analysis_cpp, 8},
