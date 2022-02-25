@@ -48,7 +48,7 @@ Rcpp::NumericVector VGVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_value
       int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
       
       for(int i = 0; i < (r*8); i++){
-        // Re-use tangents calculated for prior LoS
+        // Re-use tangents calculated from prior LoS
         int k_i = 0;
         if(i > 0){
           for(int j = 0; j < r; j++){
