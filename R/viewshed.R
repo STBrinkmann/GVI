@@ -131,10 +131,6 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   # Copy result of lineOfSight to the output raster
   output[viewshed] <- 1
   
-  # Remove cells outside buffer
-  viewshed_distance <- floor(terra::distance(output, terra::vect(observer)))
-  output[which(viewshed_distance[] > max_distance)] <- NA
-  
   
   #### 4. Compare DSM with Visibility ####
   if (plot) {
