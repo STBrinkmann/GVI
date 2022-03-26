@@ -170,8 +170,8 @@ position at 1.7 meters height (eye level).
 
 ``` r
 library(GVI)
-viewshed1 <- viewshed(observer = observer, dsm_rast = DSM, dtm_rast = DEM,
-                      max_distance = 200, observer_height = 1.7, plot = TRUE)
+vs <- viewshed(observer = observer, dsm_rast = DSM, dtm_rast = DEM,
+               max_distance = 200, observer_height = 1.7, plot = TRUE)
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
