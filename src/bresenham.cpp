@@ -116,6 +116,8 @@ void LoS(const Rcpp::IntegerMatrix &los_ref_mat,
   }
 }
 
+
+// [[Rcpp::export]]
 Rcpp::IntegerVector LoS_reference(const int x0_ref, const int y0_ref, const int r, const int nc_ref) {
   const int l = r+1;
   
@@ -162,4 +164,24 @@ Rcpp::IntegerVector LoS_reference(const int x0_ref, const int y0_ref, const int 
   }
   
   return los_ref_vec;
+}
+
+
+Rcpp::IntegerVector shared_LoS(const int r, const Rcpp::IntegerVector &los_ref_vec){
+  Rcpp::IntegerVector out(r*8);
+  out[0] = 0;
+  
+  for(int i = 1; i < (r*8); i++){
+    // Re-use tangents calculated from prior LoS
+    int k_i = 0;
+    for(int j = 0; j < r; j++){
+      k_i = j;
+      if(los_ref_vec[i*r + j] != los_ref_vec[(i-1)*r + j]){
+        out[i] = k_i;
+        break;
+      }
+    }
+  }
+  
+  return(out);
 }

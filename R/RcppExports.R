@@ -5,8 +5,20 @@ IDW_cpp <- function(rast, x, sf_x, sf_y, sf_z, n, b, radius, mode = 1L, na_only 
     .Call(`_GVI_IDW_cpp`, rast, x, sf_x, sf_y, sf_z, n, b, radius, mode, na_only, ncores, display_progress)
 }
 
+LoS_reference <- function(x0_ref, y0_ref, r, nc_ref) {
+    .Call(`_GVI_LoS_reference`, x0_ref, y0_ref, r, nc_ref)
+}
+
 VGVI_cpp <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b) {
     .Call(`_GVI_VGVI_cpp`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b)
+}
+
+viewshed_cpp_sum1 <- function(dsm, dsm_values, x0, y0, radius, h0) {
+    .Call(`_GVI_viewshed_cpp_sum1`, dsm, dsm_values, x0, y0, radius, h0)
+}
+
+viewshed_cpp_sum2 <- function(dsm, dsm_values, x0, y0, radius, h0) {
+    .Call(`_GVI_viewshed_cpp_sum2`, dsm, dsm_values, x0, y0, radius, h0)
 }
 
 viewshed_cpp <- function(dsm, dsm_values, x0, y0, radius, h0) {
