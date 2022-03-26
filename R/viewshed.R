@@ -32,7 +32,6 @@
 #' @importFrom terra xyFromCell
 #' @importFrom terra plot
 #' @importFrom terra rast
-#' @importFrom terra distance
 #' @importFrom raster raster
 #' @importFrom graphics par
 #' @importFrom graphics points
@@ -95,10 +94,10 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   
   # AOI
   output <- terra::rast(crs = terra::crs(dsm_rast),
-                        xmin = floor(x0 - raster_res/2 - max_distance), 
-                        xmax = ceiling(x0 + raster_res/2 + max_distance),
-                        ymin = floor(y0 - raster_res/2 - max_distance), 
-                        ymax = ceiling(y0 + raster_res/2 + max_distance),
+                        xmin = (x0 - raster_res/2 - max_distance), 
+                        xmax = (x0 + raster_res/2 + max_distance),
+                        ymin = (y0 - raster_res/2 - max_distance), 
+                        ymax = (y0 + raster_res/2 + max_distance),
                         resolution = raster_res, vals = 0) %>% 
     terra::crop(dsm_rast)
   
@@ -130,6 +129,16 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
 
   # Copy result of lineOfSight to the output raster
   output[viewshed] <- 1
+  
+  # Remove cells outside buffer
+  r <- round(max_distance / terra::res(dsm_rast_masked)[1])
+  
+  cells_in_vs <- LoS_reference(x0_ref = r, y0_ref = r, r = r, nc_ref = (2*r)+1) %>% 
+    na.omit() %>% 
+    unique()
+  cell_0 <- terra::cellFromXY(output, sf::st_coordinates(observer))
+  
+  output[which(!(1:ncell(output)) %in% c(cell_0, (cells_in_vs+1)))] <- NA
   
   
   #### 4. Compare DSM with Visibility ####

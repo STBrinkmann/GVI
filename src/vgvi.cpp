@@ -34,7 +34,7 @@ Rcpp::NumericVector VGVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_value
   // Reference matrix (los_mat): Project reference Bresenham Lines to all perimeter cells
   // Will be used as a reference for all input points
   const Rcpp::IntegerVector los_ref_vec = LoS_reference(x0_ref, y0_ref, r, nc_ref);
-  
+
   // Main loop
   for(int k=0; k<input_cells.size(); k++)
   {
@@ -180,13 +180,13 @@ Rcpp::NumericVector VGVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_value
 
 
 // [[Rcpp::export]]
-Rcpp::IntegerVector viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
-                                 const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0,
-                                 const int radius, const Rcpp::NumericVector & h0)
+Rcpp::IntegerVector viewshed_cpp_sum1(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
+                                      const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0,
+                                      const int radius, const Rcpp::NumericVector & h0)
 {
   // Cells from x0,y0
   Rcpp::IntegerVector x0_o = x0-1;
-  Rcpp::IntegerVector y0_o = y0-2;
+  Rcpp::IntegerVector y0_o = y0-1;
   const Rcpp::IntegerVector input_cells = Rcpp::na_omit(cellFromColRowSensitive(dsm, x0_o, y0_o));
   
   // Basic raster information
@@ -194,6 +194,161 @@ Rcpp::IntegerVector viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_v
   
   // Parameters
   const int r = (int)(radius/ras.res);
+  const int nc_ref = (2*r)+1, nr_ref = (2*r)+1;
+  const int x0_ref = r, y0_ref = x0_ref;
+  const int c0_ref = y0_ref*nc_ref + x0_ref;
+  
+  // Output vector
+  Rcpp::IntegerVector output(input_cells.size(), NA_INTEGER);
+  
+  // Reference matrix (los_mat): Project reference Bresenham Lines to all perimeter cells
+  // Will be used as a reference for all input points
+  const Rcpp::IntegerVector los_ref_vec = LoS_reference(x0_ref, y0_ref, r, nc_ref);
+
+  // Main loop
+  for(int k=0; k<input_cells.size(); k++){
+    // Outpur: x0/y0 is always visible
+    Rcpp::IntegerVector viewshed(nc_ref*nr_ref, NA_INTEGER);
+    viewshed[c0_ref] = input_cells[k]+1;
+    
+    if(h0[k] > dsm_values[input_cells[k]]){
+      // 3. Viewshed Analysis
+      Rcpp::NumericVector max_tan_vec(r);
+      int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
+      
+      for(int i = 0; i < (r*8); i++){
+        double max_tan = -9999.0;
+        
+        for(int j = 0; j < r; j++){
+          const int los_ref_cell = los_ref_vec[i*r + j];
+          if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
+            // Project reference cells to actual cell value
+            const int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
+            const int row = trunc(cell/ras.ncol);
+            const int col = cell - (row * ras.ncol);
+            const int dcol = abs(col-x0_o[k]);
+            
+            if(!(cell<0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
+              // Compute tangents of LoS_vec and update output
+              const double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
+              const double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);
+              
+              if(this_tan > max_tan){
+                max_tan = this_tan;
+                viewshed[los_ref_cell] = cell+1;
+              }
+            }
+            max_tan_vec[j] = max_tan;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    Rcpp::IntegerVector viewshed_na = Rcpp::na_omit(viewshed);
+    output[k] = viewshed_na.size();
+  }
+  
+  
+  
+  return output;
+}
+
+
+// [[Rcpp::export]]
+Rcpp::IntegerVector viewshed_cpp_sum2(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
+                                      const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0,
+                                      const int radius, const Rcpp::NumericVector & h0)
+{
+  // Cells from x0,y0
+  Rcpp::IntegerVector x0_o = x0-1;
+  Rcpp::IntegerVector y0_o = y0-1;
+  const Rcpp::IntegerVector input_cells = Rcpp::na_omit(cellFromColRowSensitive(dsm, x0_o, y0_o));
+  
+  // Basic raster information
+  const RasterInfo ras(dsm);
+  
+  // Parameters
+  const int r = (int)(radius/ras.res);
+  const int nc_ref = (2*r)+1, nr_ref = (2*r)+1;
+  const int x0_ref = r, y0_ref = x0_ref;
+  const int c0_ref = y0_ref*nc_ref + x0_ref;
+  
+  // Output vector
+  Rcpp::IntegerVector output(input_cells.size(), NA_INTEGER);
+  
+  // Reference matrix (los_mat): Project reference Bresenham Lines to all perimeter cells
+  // Will be used as a reference for all input points
+  const Rcpp::IntegerVector los_ref_vec = LoS_reference(x0_ref, y0_ref, r, nc_ref);
+  const Rcpp::IntegerVector los_start = shared_LoS(r, los_ref_vec);
+  
+  // Main loop
+  for(int k=0; k<input_cells.size(); k++){
+    // Outpur: x0/y0 is always visible
+    Rcpp::IntegerVector viewshed(nc_ref*nr_ref, NA_INTEGER);
+    viewshed[c0_ref] = input_cells[k]+1;
+    
+    if(h0[k] > dsm_values[input_cells[k]]){
+      // 3. Viewshed Analysis
+      Rcpp::NumericVector max_tan_vec(r);
+      int x = input_cells[k] - c0_ref - r*(ras.ncol-nc_ref);
+      
+      for(int i = 0; i < (r*8); i++){
+        // Re-use tangents calculated for prior LoS
+        int k_i = los_start[i];
+        double max_tan = (k_i > 1) ? max_tan_vec[k_i-1] : -9999.0;
+        
+        
+        for(int j = k_i; j < r; j++){
+          const int los_ref_cell = los_ref_vec[i*r + j];
+          if(!Rcpp::IntegerVector::is_na(los_ref_cell)){
+            // Project reference cells to actual cell value
+            const int cell = x + los_ref_cell + trunc(los_ref_cell/nc_ref)*(ras.ncol-nc_ref);
+            const int row = trunc(cell/ras.ncol);
+            const int col = cell - (row * ras.ncol);
+            const int dcol = abs(col-x0_o[k]);
+            
+            if(!(cell<0 || cell > ras.ncell || Rcpp::NumericVector::is_na(dsm_values[cell]) || dcol>r)){
+              // Compute tangents of LoS_vec and update output
+              const double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
+              const double this_tan = (dsm_values[cell] - h0[k]) / (distance_traveled);
+              
+              if(this_tan > max_tan){
+                max_tan = this_tan;
+                viewshed[los_ref_cell] = cell+1;
+              }
+            }
+            max_tan_vec[j] = max_tan;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    Rcpp::IntegerVector viewshed_na = Rcpp::na_omit(viewshed);
+    output[k] = viewshed_na.size();
+  }
+  
+  
+  
+  return output;
+}
+
+// [[Rcpp::export]]
+Rcpp::IntegerVector viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
+                                 const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0,
+                                 const int radius, const Rcpp::NumericVector & h0)
+{
+  // Cells from x0,y0
+  Rcpp::IntegerVector x0_o = x0-1;
+  Rcpp::IntegerVector y0_o = y0-1;
+  const Rcpp::IntegerVector input_cells = Rcpp::na_omit(cellFromColRowSensitive(dsm, x0_o, y0_o));
+  
+  // Basic raster information
+  const RasterInfo ras(dsm);
+  
+  // Parameters
+  const int r = (int)round(radius/ras.res);
   const int nc_ref = (2*r)+1, nr_ref = (2*r)+1;
   const int x0_ref = r, y0_ref = x0_ref;
   const int c0_ref = y0_ref*nc_ref + x0_ref;
