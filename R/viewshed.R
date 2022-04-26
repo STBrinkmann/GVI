@@ -83,14 +83,15 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   rm(dsm_res)
   
   # observer inside DSM
-  if(is.na(terra::cellFromXY(object = dsm_rast, xy = sf::st_coordinates(observer)))) {
+  observer_cell <- terra::cellFromXY(object = dsm_rast, xy = sf::st_coordinates(observer))
+  if(is.na(observer_cell)) {
     stop("observer outside dsm_rast")
   }
   
   #### 2. Prepare Data for viewshed analysis ####
   # Coordinates of start point
-  x0 <- sf::st_coordinates(observer)[1]
-  y0 <- sf::st_coordinates(observer)[2]
+  x0 <- terra::xFromCell(dsm_rast, observer_cell)
+  y0 <- terra::yFromCell(dsm_rast, observer_cell)
   
   # AOI
   output <- terra::rast(crs = terra::crs(dsm_rast),
