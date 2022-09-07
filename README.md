@@ -1,7 +1,7 @@
 
 # GVI: Greenness Visibility Index [<img src="man/figures/logo.png" align="right" height="139"/>](https://github.com/STBrinkmann/GVI)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5068835.svg)](https://doi.org/10.5281/zenodo.5068835)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7057132.svg)](https://doi.org/10.5281/zenodo.7057132)
 [![Sample
 Data](https://badgen.net/badge/Sample%20Data/10.5281%252Fzenodo.5061257/blue?)](https://doi.org/10.5281/zenodo.5061257)
 [![jonnyhuck Python

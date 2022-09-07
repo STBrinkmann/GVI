@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 # GVI: Greenness Visibility Index [<img src="man/figures/logo.png" align="right" height="139"/>](https://github.com/STBrinkmann/GVI)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5068835.svg)](https://doi.org/10.5281/zenodo.5068835) [![Sample Data](https://badgen.net/badge/Sample%20Data/10.5281%252Fzenodo.5061257/blue?)](https://doi.org/10.5281/zenodo.5061257) [![jonnyhuck Python Library](https://badgen.net/badge/jonnyhuck/Python%20Library/blue?icon=github)](https://github.com/jonnyhuck/green-visibility-index)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7057132.svg)](https://doi.org/10.5281/zenodo.7057132) [![Sample Data](https://badgen.net/badge/Sample%20Data/10.5281%252Fzenodo.5061257/blue?)](https://doi.org/10.5281/zenodo.5061257) [![jonnyhuck Python Library](https://badgen.net/badge/jonnyhuck/Python%20Library/blue?icon=github)](https://github.com/jonnyhuck/green-visibility-index)
 
 The `GVI` R package helps researchers compute the Greenness Visibility Index (GVI) presented by [Labib, Huck and Lindley (2021)](https://doi.org/10.1016/j.scitotenv.2020.143050) and includes optimisation of the underlying algortihm proposed by [Brinkmann et al. (2022)](https://doi.org/10.5194/agile-giss-3-27-2022). The GVI is calculated using a Digital Surface Model (DSM), Digital Terrain Model (DTM) and Greenness Raster. `GVI` is written in C++ to provide fast and light weighted functionality.
 
