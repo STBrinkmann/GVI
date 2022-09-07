@@ -9,7 +9,9 @@ Library](https://badgen.net/badge/jonnyhuck/Python%20Library/blue?icon=github)](
 
 The `GVI` R package helps researchers compute the Greenness Visibility
 Index (GVI) presented by [Labib, Huck and Lindley
-(2021)](https://doi.org/10.1016/j.scitotenv.2020.143050). The GVI is
+(2021)](https://doi.org/10.1016/j.scitotenv.2020.143050) and includes
+optimisation of the underlying algortihm proposed by [Brinkmann et
+al. (2022)](https://doi.org/10.5194/agile-giss-3-27-2022). The GVI is
 calculated using a Digital Surface Model (DSM), Digital Terrain Model
 (DTM) and Greenness Raster. `GVI` is written in C++ to provide fast and
 light weighted functionality.
@@ -29,12 +31,12 @@ Huck](https://github.com/jonnyhuck/green-visibility-index)
 
 ## Functions
 
-| Function                                                              | Description                                                                                                                            |
-|-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| [*viewshed*](#viewshed)                                               | Computes the viewshed of a single point on a Digital Surface Model                                                                     |
-| [*visualizeWeights*](#visualize-weights)                              | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi\_from\_sf* functions                                      |
-| [*vgvi\_from\_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons               |
-| sf\_to\_rast                                                          | Function for computing a continuous raster map from a sf object by interpolating the sf values using Inverse Distance Weighting (IDW). |
+| Function                                                            | Description                                                                                                                            |
+|---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| [*viewshed*](#viewshed)                                             | Computes the viewshed of a single point on a Digital Surface Model                                                                     |
+| [*visualizeWeights*](#visualize-weights)                            | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi_from_sf* functions                                        |
+| [*vgvi_from_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons               |
+| sf_to_rast                                                          | Function for computing a continuous raster map from a sf object by interpolating the sf values using Inverse Distance Weighting (IDW). |
 
 ## Installation
 
@@ -85,7 +87,10 @@ prominence of an object in space with increasing distance from the
 observer. Currently two options are supported, a logistic and an
 exponential function.
 
-![\\begin{align\*} f(x) = \\cfrac{1}{1 + e^{b(x-m)}} && \\text{(logistic)}\\\\ f(x) = \\cfrac{1}{1 + (bx^{m})} && \\text{(exponential)} \\end{align\*} ](https://latex.codecogs.com/svg.latex?%5Cbegin%7Balign%2A%7D%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20e%5E%7Bb%28x-m%29%7D%7D%20%26%26%20%5Ctext%7B%28logistic%29%7D%5C%5C%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20%28bx%5E%7Bm%7D%29%7D%20%26%26%20%5Ctext%7B%28exponential%29%7D%20%5Cend%7Balign%2A%7D%20 "\begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} ")
+![\begin{align\*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align\*}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cbegin%7Balign%2A%7D%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20e%5E%7Bb%28x-m%29%7D%7D%20%26%26%20%5Ctext%7B%28logistic%29%7D%5C%5C%20f%28x%29%20%3D%20%5Ccfrac%7B1%7D%7B1%20%2B%20%28bx%5E%7Bm%7D%29%7D%20%26%26%20%5Ctext%7B%28exponential%29%7D%20%5Cend%7Balign%2A%7D "\begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*}")
+
+The full algorithm has been described in [Brinkmann et
+al. (2022)](https://doi.org/10.5194/agile-giss-3-27-2022).
 
 ### Visualize Weights
 
@@ -187,10 +192,10 @@ vgvi_from_sf(observer = observer,
              dsm_rast = DSM, dtm_rast = DEM, greenspace_rast = GreenSpace,
              max_distance = 200, observer_height = 1.7,
              m = 0.5, b = 8, mode = "logit")$VGVI
-#> [1] 0.5199976
+#> [1] 0.5255536
 ```
 
-The output of \~0.52 indicates, that \~52% of the visible area, within a
+The output of \~0.53 indicates, that \~53% of the visible area, within a
 200 meters radius, is green.
 
 ### 2. Road Network
@@ -242,7 +247,7 @@ citation("GVI")
 #>   Brinkmann, S.T. and Labib, S.M. (2021). GVI: R package for computing
 #>   VGVI for Spatial Raster. doi: 10.5281/zenodo.5060325.
 #> 
-#> A BibTeX entry for LaTeX users is
+#> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
 #> 
 #>   @Manual{,
 #>     title = {GVI: R package for computing VGVI for Spatial Raster},
@@ -284,6 +289,12 @@ plotter. IBM Systems Journal, vol. 4, no. 1, pp. 25-30, doi:
 Bresenham, Jack (1977): A linear algorithm for incremental digital
 display of circular arcs. Commun. ACM 20, 2 (Feb. 1977), 100–106. doi:
 [10.1145/359423.359432](https://doi.org/10.1145/359423.359432).
+
+Brinkmann, S. T., Kremer, D., and Walker, B. B. (2022): Modelling
+eye-level visibility of urban green space: Optimising city-wide
+point-based viewshed computations through prototyping, AGILE GIScience
+Ser., 3, 27,
+[https://doi.org/10.5194/agile-giss-3-27-2022](https://doi.org/10.5194/agile-giss-3-27-2022,).
 
 Labib, S.M., Jonny J. Huck, and Sarah Lindley (2021): Modelling and
 Mapping Eye-Level Greenness Visibility Exposure Using Multi-Source Data

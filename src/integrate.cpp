@@ -13,11 +13,11 @@ double f2(double x, double m, double b) {
 double integrate(double lower, double upper, int n, int fun, double m, double b){
   
   double sum=0;
-  Rcpp::NumericVector x(n+1);
-  Rcpp::NumericVector y(n+1);    
+  std::vector<double> x(n+1);
+  std::vector<double> y(n+1);    
   double h = (upper-lower)/n;     //get the width of the subintervals
   for (int i = 0; i <= n; i++) {  //loop to evaluate x0,...xn and y0,...yn
-    x[i]=lower+i*h;             //and store them in arrays
+    x[i]=lower+i*h;               //and store them in arrays
     if ( fun == 1){
       y[i]=f1(x[i], m, b);
     } else {

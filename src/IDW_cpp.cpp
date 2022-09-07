@@ -52,16 +52,15 @@ NumericVector IDW_cpp(S4 &rast, const NumericVector &x,
   
   // Progress bar
   Progress pb(x.size(), display_progress);
-  
+
   // Main loop: Loop over all values of the raster x
 #if defined(_OPENMP)
   omp_set_num_threads(ncores);
 #pragma omp parallel for shared(out)
 #endif
   for(int j = 0; j < x.size(); j++){
-    if (!pb.is_aborted()) {
-      Progress::check_abort();
-      
+    if ( pb.increment() ) {
+
       if(na_only == false || (na_only && NumericVector::is_na(x[j]))){
         // 1. Convert j to row/col and X/Y coordinates
         // row col from cell
@@ -84,6 +83,7 @@ NumericVector IDW_cpp(S4 &rast, const NumericVector &x,
             // Distance
             const double dist = sqrt((x_j-sf_x[i])*(x_j-sf_x[i]) + (y_j-sf_y[i])*(y_j-sf_y[i]));
             
+            // If distance <= 0, use a small value (resolution / 4) instead
             if(dist <= 0){
               d.push_back(rast_info.res/4);
               z.push_back(sf_z[i]);
@@ -150,8 +150,6 @@ NumericVector IDW_cpp(S4 &rast, const NumericVector &x,
       } else {
         out[j] = x[j];
       }
-      
-      pb.increment();
     }
   }
   

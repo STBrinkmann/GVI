@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5068835.svg)](https://doi.org/10.5281/zenodo.5068835) [![Sample Data](https://badgen.net/badge/Sample%20Data/10.5281%252Fzenodo.5061257/blue?)](https://doi.org/10.5281/zenodo.5061257) [![jonnyhuck Python Library](https://badgen.net/badge/jonnyhuck/Python%20Library/blue?icon=github)](https://github.com/jonnyhuck/green-visibility-index)
 
-The `GVI` R package helps researchers compute the Greenness Visibility Index (GVI) presented by [Labib, Huck and Lindley (2021)](https://doi.org/10.1016/j.scitotenv.2020.143050). The GVI is calculated using a Digital Surface Model (DSM), Digital Terrain Model (DTM) and Greenness Raster. `GVI` is written in C++ to provide fast and light weighted functionality.
+The `GVI` R package helps researchers compute the Greenness Visibility Index (GVI) presented by [Labib, Huck and Lindley (2021)](https://doi.org/10.1016/j.scitotenv.2020.143050) and includes optimisation of the underlying algortihm proposed by [Brinkmann et al. (2022)](https://doi.org/10.5194/agile-giss-3-27-2022). The GVI is calculated using a Digital Surface Model (DSM), Digital Terrain Model (DTM) and Greenness Raster. `GVI` is written in C++ to provide fast and light weighted functionality.
 
 -   [Functions](#functions)
 
@@ -32,16 +32,16 @@ The `GVI` R package helps researchers compute the Greenness Visibility Index (GV
 
 GVI can also be computed in Python, by [Jonny Huck](https://github.com/jonnyhuck/green-visibility-index)
 
-## Functions
+## Functions {#functions}
 
 | Function                                                            | Description                                                                                                                            |
-|---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+|-------------------------|-----------------------------------------------|
 | [*viewshed*](#viewshed)                                             | Computes the viewshed of a single point on a Digital Surface Model                                                                     |
 | [*visualizeWeights*](#visualize-weights)                            | Helper function, to adjust spatial weight parameters in the *vgvi* and *vgvi_from_sf* functions                                        |
 | [*vgvi_from_sf*](#viewshed-greenness-visibility-index-vgvi-from-sf) | Computes the *viewshed* and calculates the proportion of visible greenspace; Supports multiple points, lines or polygons               |
 | sf_to_rast                                                          | Function for computing a continuous raster map from a sf object by interpolating the sf values using Inverse Distance Weighting (IDW). |
 
-## Installation
+## Installation {#installation}
 
 1.  Install [R](https://cran.r-project.org/)
 
@@ -57,12 +57,12 @@ GVI can also be computed in Python, by [Jonny Huck](https://github.com/jonnyhuck
 
     -   Install `GVI`
 
-        `GVI` is still in very active development. Therefore, the package is also not on CRAN yet. You can install the latest version of `GVI` from GitHub with:  
+        `GVI` is still in very active development. Therefore, the package is also not on CRAN yet. You can install the latest version of `GVI` from GitHub with:\
         `remotes::install_git("https://github.com/STBrinkmann/GVI")`
 
-## Methods
+## Methods {#methods}
 
-### Viewshed
+### Viewshed {#viewshed}
 
 The `viewshed` function computes a binary viewshed of a single point on a Digital Surface Model (DSM) raster. A radial buffer is applied on the observer position, and visibility is beeing calculated usig a C++ implementation of Bresenham's line algorithm [[Bresenham 1965](https://doi.org/10.1147/sj.41.0025), [Bresenham 1977](https://doi.org/10.1145/359423.359432)] and simple geometry. The result of the `viewshed` function is a radial raster where 0 = no-visible and 1 = visible area.
 
@@ -74,7 +74,9 @@ Based on a viewshed and a binary greenspace raster, all visible points are class
 
 $$\begin{align*} f(x) = \cfrac{1}{1 + e^{b(x-m)}} && \text{(logistic)}\\ f(x) = \cfrac{1}{1 + (bx^{m})} && \text{(exponential)} \end{align*} $$
 
-### Visualize Weights
+The full algorithm has been described in [Brinkmann et al. (2022)](https://doi.org/10.5194/agile-giss-3-27-2022).
+
+### Visualize Weights {#visualize-weights}
 
 The `visualizeWeights` function helps to adjust spatial weight parameters *m* and *b* used in the `vgvi` and `vgvi_from_sf` functions.
 
@@ -82,11 +84,11 @@ The `visualizeWeights` function helps to adjust spatial weight parameters *m* an
 
 *Example output of the* `visualizeWeight` *function to compare and parameterize the decay weights of a logistic (left) and an exponential (right) function.*
 
-### Viewshed Greenness Visibility Index (VGVI) from sf
+### Viewshed Greenness Visibility Index (VGVI) from sf {#viewshed-greenness-visibility-index-vgvi-from-sf}
 
 The `vgvi_from_sf` function combines the `viewshed` function to compute a raster of visible cells, and calculates the VGVI using a binary GreenSpace map. The input of the observer location is an [sf](https://r-spatial.github.io/sf/) object (supports points, lines and polygons). If this object is a line or polygon feature, it will be converted to points. For every point, first the viewshed, than the VGVI is being calculated. The output of the `vgvi_from_sf` function is a single sf point object containing the VGVI for every point. This function supports parallel computation on Windows, Linux and MacOS, however it is highly recommended to use Linux or MacOS.
 
-## Examples
+## Examples {#examples}
 
 ### Data
 
@@ -147,7 +149,7 @@ vgvi_from_sf(observer = observer,
              m = 0.5, b = 8, mode = "logit")$VGVI
 ```
 
-The output of \~0.52 indicates, that \~52% of the visible area, within a 200 meters radius, is green.
+The output of \~0.53 indicates, that \~53% of the visible area, within a 200 meters radius, is green.
 
 ### 2. Road Network
 
@@ -181,7 +183,7 @@ Often researchers need to compute the VGVI for a large study area, therefore we 
 
 ## About
 
-### Citation
+### Citation {#citation}
 
 Run this command to get info on how to cite this package.
 
@@ -197,8 +199,8 @@ Dr. S.M. Labib (Author) e-mail: [sml80\@medschl.cam.ac.uk](mailto:sml80@medschl.
 
 ### Paper authors
 
-S.M. Labib (1, 2\*)  
-Jonny J. Huck (1)  
+S.M. Labib (1, 2\*)\
+Jonny J. Huck (1)\
 Sarah Lindley (1)
 
 1: Department of Geography, School of Environment, Education and Development (SEED), University of Manchester, Arthur Lewis building (1st Floor), Oxford Road, Manchester M13 9PL, United Kingdom.
@@ -211,6 +213,8 @@ Sarah Lindley (1)
 
 Bresenham, J.E. (1965): Algorithm for computer control of a digital plotter. IBM Systems Journal, vol. 4, no. 1, pp. 25-30, doi: [10.1147/sj.41.0025](https://doi.org/10.1147/sj.41.0025).
 
-Bresenham, Jack (1977): A linear algorithm for incremental digital display of circular arcs. Commun. ACM 20, 2 (Feb. 1977), 100–106. doi: [10.1145/359423.359432](https://doi.org/10.1145/359423.359432).
+Bresenham, Jack (1977): A linear algorithm for incremental digital display of circular arcs. Commun. ACM 20, 2 (Feb. 1977), 100--106. doi: [10.1145/359423.359432](https://doi.org/10.1145/359423.359432).
+
+Brinkmann, S. T., Kremer, D., and Walker, B. B. (2022): Modelling eye-level visibility of urban green space: Optimising city-wide point-based viewshed computations through prototyping, AGILE GIScience Ser., 3, 27, [https://doi.org/10.5194/agile-giss-3-27-2022](https://doi.org/10.5194/agile-giss-3-27-2022,).
 
 Labib, S.M., Jonny J. Huck, and Sarah Lindley (2021): Modelling and Mapping Eye-Level Greenness Visibility Exposure Using Multi-Source Data at High Spatial Resolutions. *Science of The Total Environment* 755 (February): 143050. doi: [j.scitotenv.2020.143050](https://doi.org/10.1016/j.scitotenv.2020.143050).

@@ -9,7 +9,7 @@ distance_analysis(
   dsm_rast,
   dtm_rast,
   greenspace_rast = NULL,
-  max_distance = 1:800,
+  max_distance = 800,
   observer_height = 1.7,
   raster_res = NULL,
   summarise = FALSE,
@@ -26,7 +26,7 @@ distance_analysis(
 
 \item{greenspace_rast}{optional; \code{\link[terra]{rast}} of the binary Greenspace mask. Values of the Greenspace mask must be 1 for Green and 0 for No-Green}
 
-\item{max_distance}{numeric; Maximum buffer distance. If max_distance is a vector, the Viewshed Distance Analysis is conducted for multiple distance values.}
+\item{max_distance}{numeric; Maximum buffer distance}
 
 \item{observer_height}{numeric > 0; Height of the observer (e.g. 1.7 meters)}
 

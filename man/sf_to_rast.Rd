@@ -13,6 +13,7 @@ sf_to_rast(
   beta = 2,
   raster_res = NULL,
   spacing = raster_res,
+  na_only = FALSE,
   cores = 1,
   progress = FALSE
 )

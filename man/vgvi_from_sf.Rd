@@ -17,7 +17,6 @@ vgvi_from_sf(
   b = 8,
   mode = c("logit", "exponential"),
   cores = 1,
-  chunk_size = 10000,
   folder_path = NULL,
   progress = FALSE
 )
@@ -48,8 +47,6 @@ The \code{spacing} parameter sets the distance in between the points on the line
 
 \item{cores}{numeric; The number of cores to use, i.e. at most how many child processes will be run simultaneously}
 
-\item{chunk_size}{numeric; Chunk size for parallelization. See ‘Details’}
-
 \item{folder_path}{optional; Folder path to where the output should be saved continuously. Must not inklude a filename extension (e.g. '.shp', '.gpkg').}
 
 \item{progress}{logical; Show progress bar and computation time?}
@@ -71,7 +68,4 @@ The CRS (\code{\link[sf]{st_crs}}) needs to have a metric unit!
 The type of function, used for calculating the distance decay weights, can be defined with the \code{mode} parameter.
 The argument 'logit' uses the logistic function, d = 1 / (1 + e^(b * (x - m))) and 'exponential' the exponential function d = 1 / (1 + (b * x^m)).
 The decay function can be visualized using the \code{\link[GVI]{visualizeWeights}} function.
-
-Higher values of chunk_size increase computation time, but may also be more RAM intensive.
-It is highly recommended to use a Linux or Mac system, for better parallel performance.
 }

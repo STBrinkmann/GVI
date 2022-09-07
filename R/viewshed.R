@@ -83,15 +83,14 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   rm(dsm_res)
   
   # observer inside DSM
-  observer_cell <- terra::cellFromXY(object = dsm_rast, xy = sf::st_coordinates(observer))
-  if(is.na(observer_cell)) {
+  if(is.na(terra::cellFromXY(object = dsm_rast, xy = sf::st_coordinates(observer)))) {
     stop("observer outside dsm_rast")
   }
   
   #### 2. Prepare Data for viewshed analysis ####
   # Coordinates of start point
-  x0 <- terra::xFromCell(dsm_rast, observer_cell)
-  y0 <- terra::yFromCell(dsm_rast, observer_cell)
+  x0 <- sf::st_coordinates(observer)[1]
+  y0 <- sf::st_coordinates(observer)[2]
   
   # AOI
   output <- terra::rast(crs = terra::crs(dsm_rast),
@@ -126,8 +125,10 @@ viewshed <- function(observer, dsm_rast, dtm_rast,
   dsm_cpp_rast <- terra::rast(dsm_rast_masked) %>% raster::raster()
   
   # Apply viewshed (C++) function
-  viewshed <- viewshed_cpp(dsm_cpp_rast, dsm_vec, c0, r0, max_distance, height0)
-
+  viewshed <- viewshed_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
+                           x0 = c0, y0 = r0, h0 = height0,
+                           radius = max_distance)
+  
   # Copy result of lineOfSight to the output raster
   output[viewshed] <- 1
   

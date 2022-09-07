@@ -9,27 +9,19 @@ LoS_reference <- function(x0_ref, y0_ref, r, nc_ref) {
     .Call(`_GVI_LoS_reference`, x0_ref, y0_ref, r, nc_ref)
 }
 
-VGVI_cpp <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b) {
-    .Call(`_GVI_VGVI_cpp`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b)
-}
-
-viewshed_cpp_sum1 <- function(dsm, dsm_values, x0, y0, radius, h0) {
-    .Call(`_GVI_viewshed_cpp_sum1`, dsm, dsm_values, x0, y0, radius, h0)
-}
-
-viewshed_cpp_sum2 <- function(dsm, dsm_values, x0, y0, radius, h0) {
-    .Call(`_GVI_viewshed_cpp_sum2`, dsm, dsm_values, x0, y0, radius, h0)
-}
-
-viewshed_cpp <- function(dsm, dsm_values, x0, y0, radius, h0) {
-    .Call(`_GVI_viewshed_cpp`, dsm, dsm_values, x0, y0, radius, h0)
-}
-
 viewshed_distance_analysis_cpp <- function(dsm, dsm_values, x0, y0, radius, h0, ncores = 1L, display_progress = FALSE) {
     .Call(`_GVI_viewshed_distance_analysis_cpp`, dsm, dsm_values, x0, y0, radius, h0, ncores, display_progress)
 }
 
 viewshed_and_greenness_distance_analysis_cpp <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, ncores = 1L, display_progress = FALSE) {
     .Call(`_GVI_viewshed_and_greenness_distance_analysis_cpp`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, ncores, display_progress)
+}
+
+VGVI_cpp <- function(dsm, dsm_values, greenspace, greenspace_values, x0, y0, h0, radius, fun, m, b, ncores = 1L, display_progress = FALSE) {
+    .Call(`_GVI_VGVI_cpp`, dsm, dsm_values, greenspace, greenspace_values, x0, y0, h0, radius, fun, m, b, ncores, display_progress)
+}
+
+viewshed_cpp <- function(dsm, dsm_values, x0, y0, h0, radius, display_progress = FALSE) {
+    .Call(`_GVI_viewshed_cpp`, dsm, dsm_values, x0, y0, h0, radius, display_progress)
 }
 

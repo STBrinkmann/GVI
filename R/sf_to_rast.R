@@ -132,9 +132,7 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
   
   #### 3. Prepare data for interpolation analysis ####
   # observer
-  if(!is.null(aoi)){
-    observer <- observer[aoi,]
-  } else {
+  if(is.null(aoi)){
     aoi <- st_as_sfc(sf::st_bbox(observer))
   }
   
@@ -146,7 +144,7 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
   # mode
   if(mode == 1) {
     box_size <- (as.integer(max_distance/raster_res)) * (as.integer(max_distance/raster_res))
-    mode <- ifelse(box_size > n, 0, 1)
+    mode <- ifelse(box_size > n, 1, 0)
     rm(box_size)
   }
   
@@ -156,8 +154,14 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
                           ymin = sf::st_bbox(aoi)[2],
                           ymax = sf::st_bbox(aoi)[4],
                           crs = sf::st_crs(aoi)$proj4string,
-                          resolution = raster_res) %>% 
-    terra::rasterize(terra::vect(observer), ., v, background = NA)
+                          resolution = raster_res)
+  obs_cells <- terra::cellFromXY(iwd_rast, sf::st_coordinates(observer))
+  
+  # Remove observer outside aoi
+  observer <- observer[which(!is.na(obs_cells)), ]
+  obs_cells <- na.omit(obs_cells)
+  
+  iwd_rast[obs_cells] <- dplyr::pull(observer, v)
   
   if (progress) setTxtProgressBar(pb, 2)
   
@@ -168,7 +172,7 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
   
   #### 4. IWD ####
   if (progress) {
-    message("Computing IWD interpolation:")
+    message("\nComputing IWD interpolation:")
   }
   
   iwd_vals <- IDW_cpp(rast = iwd_cpp_rast, x = iwd_raster_vec,

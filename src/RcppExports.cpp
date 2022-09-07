@@ -46,75 +46,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// VGVI_cpp
-Rcpp::NumericVector VGVI_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, Rcpp::S4& greenspace, const Rcpp::NumericVector& greenspace_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0, const int fun, const double m, const double b);
-RcppExport SEXP _GVI_VGVI_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP greenspaceSEXP, SEXP greenspace_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP, SEXP funSEXP, SEXP mSEXP, SEXP bSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::S4& >::type dsm(dsmSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dsm_values(dsm_valuesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::S4& >::type greenspace(greenspaceSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type greenspace_values(greenspace_valuesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type x0(x0SEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type y0(y0SEXP);
-    Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
-    Rcpp::traits::input_parameter< const int >::type fun(funSEXP);
-    Rcpp::traits::input_parameter< const double >::type m(mSEXP);
-    Rcpp::traits::input_parameter< const double >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(VGVI_cpp(dsm, dsm_values, greenspace, greenspace_values, x0, y0, radius, h0, fun, m, b));
-    return rcpp_result_gen;
-END_RCPP
-}
-// viewshed_cpp_sum1
-Rcpp::IntegerVector viewshed_cpp_sum1(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0);
-RcppExport SEXP _GVI_viewshed_cpp_sum1(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::S4& >::type dsm(dsmSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dsm_values(dsm_valuesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type x0(x0SEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type y0(y0SEXP);
-    Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
-    rcpp_result_gen = Rcpp::wrap(viewshed_cpp_sum1(dsm, dsm_values, x0, y0, radius, h0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// viewshed_cpp_sum2
-Rcpp::IntegerVector viewshed_cpp_sum2(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0);
-RcppExport SEXP _GVI_viewshed_cpp_sum2(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::S4& >::type dsm(dsmSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dsm_values(dsm_valuesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type x0(x0SEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type y0(y0SEXP);
-    Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
-    rcpp_result_gen = Rcpp::wrap(viewshed_cpp_sum2(dsm, dsm_values, x0, y0, radius, h0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// viewshed_cpp
-Rcpp::IntegerVector viewshed_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0);
-RcppExport SEXP _GVI_viewshed_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::S4& >::type dsm(dsmSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dsm_values(dsm_valuesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type x0(x0SEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type y0(y0SEXP);
-    Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
-    rcpp_result_gen = Rcpp::wrap(viewshed_cpp(dsm, dsm_values, x0, y0, radius, h0));
-    return rcpp_result_gen;
-END_RCPP
-}
 // viewshed_distance_analysis_cpp
 Rcpp::IntegerMatrix viewshed_distance_analysis_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector x0, const Rcpp::IntegerVector y0, const int radius, const Rcpp::NumericVector& h0, const int ncores, const bool display_progress);
 RcppExport SEXP _GVI_viewshed_distance_analysis_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP radiusSEXP, SEXP h0SEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
@@ -153,16 +84,54 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// VGVI_cpp
+std::vector<double> VGVI_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, Rcpp::S4& greenspace, const Rcpp::NumericVector& greenspace_values, const Rcpp::IntegerVector& x0, const Rcpp::IntegerVector& y0, const Rcpp::NumericVector& h0, const int radius, const int fun, const double m, const double b, const int ncores, const bool display_progress);
+RcppExport SEXP _GVI_VGVI_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP greenspaceSEXP, SEXP greenspace_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP h0SEXP, SEXP radiusSEXP, SEXP funSEXP, SEXP mSEXP, SEXP bSEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::S4& >::type dsm(dsmSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dsm_values(dsm_valuesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::S4& >::type greenspace(greenspaceSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type greenspace_values(greenspace_valuesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type y0(y0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
+    Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
+    Rcpp::traits::input_parameter< const int >::type fun(funSEXP);
+    Rcpp::traits::input_parameter< const double >::type m(mSEXP);
+    Rcpp::traits::input_parameter< const double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< const int >::type ncores(ncoresSEXP);
+    Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(VGVI_cpp(dsm, dsm_values, greenspace, greenspace_values, x0, y0, h0, radius, fun, m, b, ncores, display_progress));
+    return rcpp_result_gen;
+END_RCPP
+}
+// viewshed_cpp
+std::vector<int> viewshed_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector& x0, const Rcpp::IntegerVector& y0, const Rcpp::NumericVector& h0, const int radius, const bool display_progress);
+RcppExport SEXP _GVI_viewshed_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP h0SEXP, SEXP radiusSEXP, SEXP display_progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::S4& >::type dsm(dsmSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dsm_values(dsm_valuesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type y0(y0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
+    Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
+    Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(viewshed_cpp(dsm, dsm_values, x0, y0, h0, radius, display_progress));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_GVI_IDW_cpp", (DL_FUNC) &_GVI_IDW_cpp, 12},
     {"_GVI_LoS_reference", (DL_FUNC) &_GVI_LoS_reference, 4},
-    {"_GVI_VGVI_cpp", (DL_FUNC) &_GVI_VGVI_cpp, 11},
-    {"_GVI_viewshed_cpp_sum1", (DL_FUNC) &_GVI_viewshed_cpp_sum1, 6},
-    {"_GVI_viewshed_cpp_sum2", (DL_FUNC) &_GVI_viewshed_cpp_sum2, 6},
-    {"_GVI_viewshed_cpp", (DL_FUNC) &_GVI_viewshed_cpp, 6},
     {"_GVI_viewshed_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_distance_analysis_cpp, 8},
     {"_GVI_viewshed_and_greenness_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_and_greenness_distance_analysis_cpp, 10},
+    {"_GVI_VGVI_cpp", (DL_FUNC) &_GVI_VGVI_cpp, 13},
+    {"_GVI_viewshed_cpp", (DL_FUNC) &_GVI_viewshed_cpp, 7},
     {NULL, NULL, 0}
 };
 

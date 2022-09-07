@@ -16,7 +16,6 @@
 #' @param b numeric; See ‘Details’
 #' @param mode character; 'logit' or 'exponential'. See ‘Details’
 #' @param cores numeric; The number of cores to use, i.e. at most how many child processes will be run simultaneously
-#' @param chunk_size numeric; Chunk size for parallelization. See ‘Details’
 #' @param folder_path optional; Folder path to where the output should be saved continuously. Must not inklude a filename extension (e.g. '.shp', '.gpkg').
 #' @param progress logical; Show progress bar and computation time?
 #'
@@ -29,9 +28,6 @@
 #' The type of function, used for calculating the distance decay weights, can be defined with the \code{mode} parameter.
 #' The argument 'logit' uses the logistic function, d = 1 / (1 + e^(b * (x - m))) and 'exponential' the exponential function d = 1 / (1 + (b * x^m)).
 #' The decay function can be visualized using the \code{\link[GVI]{visualizeWeights}} function.
-#' 
-#' Higher values of chunk_size increase computation time, but may also be more RAM intensive.
-#' It is highly recommended to use a Linux or Mac system, for better parallel performance.
 #'
 #' @return sf_object containing the weighted VGVI values as POINT features, where 0 = no green cells are visible, and 1 = all of the visible cells are green. 
 #' @export
@@ -72,17 +68,13 @@
 #' @importFrom methods is
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @importFrom doParallel registerDoParallel
-#' @importFrom foreach foreach
-#' @importFrom foreach %dopar%
 #' @useDynLib GVI, .registration = TRUE
 
 vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
                          max_distance = 800, observer_height = 1.7,
                          raster_res = NULL, spacing = raster_res,
                          m = 0.5, b = 8, mode = c("logit", "exponential"),
-                         cores = 1, chunk_size = 10000,
-                         folder_path = NULL, progress = FALSE) {
+                         cores = 1, folder_path = NULL, progress = FALSE) {
   
   #### 1. Check input ####
   # observer
@@ -143,12 +135,12 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
   }
   
   # mode
-  if (is.character(mode) && (mode == c("logit", "exponential"))){
-    mode = 2
+  if (is.character(mode) && (mode == "logit")){
+    mode = 1
   } else if (is.character(mode) && (mode == "exponential")){
     mode = 2
-  } else if (is.character(mode) && (mode == "logit")){
-    mode = 1
+  } else if (is.character(mode) && (mode == c("logit", "exponential"))){
+    mode = 2
   } else {
     stop("mode must be logit or exponential")
   }
@@ -250,15 +242,10 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
                   id = 1:dplyr::n()) %>% 
     dplyr::select(id, VGVI, dplyr::everything())
   
-  # Convert to list
-  observer_list <- suppressWarnings(
-    1:nrow(observer) %>%
-      split(seq(1, length(.), chunk_size))
-  )
   
   # convert x0/y0 to col/row
-  x0 <- terra::colFromX(dsm_rast, x0)
-  y0 <- terra::rowFromY(dsm_rast, y0)
+  c0 <- terra::colFromX(dsm_rast, x0)
+  r0 <- terra::rowFromY(dsm_rast, y0)
   
   if (progress) setTxtProgressBar(pb, 4)
   
@@ -274,70 +261,27 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
   } else if (length(invalid_points) > 1) {
     message(paste(length(invalid_points), "points have been removed, because they were outside of the DSM or DTM"))
   }
-  
+  invisible(gc())
   
   #### 7. Calculate viewsheds and VGVI ####
   if (progress) {
     message(paste0("Computing VGVI for ", nrow(observer), ifelse(nrow(observer)>1, " points:", " point:")))
-    pb = txtProgressBar(min = 0, max = length(observer_list), initial = 0, style = 3)
+    #pb = txtProgressBar(min = 0, max = length(observer_list), initial = 0, style = 3)
     start_time <- Sys.time()
   }
   
-  if (cores > 1 && Sys.info()[["sysname"]] == "Windows") {
-    cl <- parallel::makeCluster(cores)
-    doParallel::registerDoParallel(cl)
+  vgvi_values <- VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
+                          greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec,
+                          x0 = c0, y0 = r0, radius = max_distance, h0 = height_0_vec,
+                          fun = mode, m = m, b = b, ncores = cores, display_progress = progress)
+  
+  valid_values <- unlist(lapply(vgvi_values, is.numeric), use.names = FALSE)
+  observer[valid_values,2] <- vgvi_values[valid_values]
+  
+  if (!is.null(folder_path)) {
+    sf::st_write(observer, folder_path, append = TRUE, quiet = T)
   }
   
-  
-  for (j in seq_along(observer_list)){
-    this_aoi <- observer[observer_list[[j]], ]
-    this_ids <- this_aoi$id
-    
-    #### Calculate VGVI
-    if (cores > 1) {
-      if (Sys.info()[["sysname"]] == "Windows") {
-        # Calculate VGVI in parallel
-        par_fun <-  function(i){
-          VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                   greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
-                   x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
-                   fun = mode, m = m, b = b)
-        }
-        
-        vgvi_list <- foreach::foreach(i=this_ids) %dopar% par_fun(i)
-      }
-      else {
-        vgvi_list <- parallel::mclapply(this_ids, function(i){
-          VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                   greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
-                   x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
-                   fun = mode, m = m, b = b)},
-          mc.cores = cores, mc.preschedule = TRUE)
-      }
-    } else {
-      vgvi_list <- lapply(this_ids, function(i){
-        VGVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                 greenspace = greenspace_cpp_rast, greenspace_values = greenspace_vec, 
-                 x0 = x0[i], y0 = y0[i], radius = max_distance, h0 = height_0_vec[i],
-                 fun = mode, m = m, b = b)})
-    }
-    
-    vgvi_values <- unlist(vgvi_list, use.names = FALSE)
-    
-    # Update observer
-    valid_values <- unlist(lapply(vgvi_values, is.numeric), use.names = FALSE)
-    observer[this_ids[valid_values],2] <- vgvi_values[valid_values]
-    
-    if (!is.null(folder_path)) {
-      sf::st_write(observer[this_ids, ], folder_path, append = TRUE, quiet = T)
-    }
-    
-    # Update ProgressBar
-    if (progress) setTxtProgressBar(pb, j)
-  }
-  if (cores > 1 && Sys.info()[["sysname"]] == "Windows") {
-    parallel::stopCluster(cl)
-  }
   
   if (progress) {
     time_dif <- round(cores * ((as.numeric(difftime(Sys.time(), start_time, units = "s"))*1000) / nrow(observer)), 2)
@@ -359,5 +303,9 @@ vgvi_from_sf <- function(observer, dsm_rast, dtm_rast, greenspace_rast,
     
     message(paste("Average time for a single point:", time_dif, "milliseconds"))
   }
+  
+  rm(dsm_cpp_rast, dsm_vec, greenspace_cpp_rast, greenspace_vec, c0, r0, height_0_vec)
+  invisible(gc())
+  
   return(observer)
 }
