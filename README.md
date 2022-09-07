@@ -245,15 +245,16 @@ citation("GVI")
 #> To cite GVI in publications use:
 #> 
 #>   Brinkmann, S.T. and Labib, S.M. (2021). GVI: R package for computing
-#>   VGVI for Spatial Raster. doi: 10.5281/zenodo.5060325.
+#>   VGVI for Spatial Raster (v1.1). doi:
+#>   https://doi.org/10.5281/zenodo.7057132.
 #> 
 #> Ein BibTeX-Eintrag für LaTeX-Benutzer ist
 #> 
 #>   @Manual{,
-#>     title = {GVI: R package for computing VGVI for Spatial Raster},
+#>     title = {GVI: R package for computing VGVI for Spatial Raster (v1.1)},
 #>     author = {Brinkmann S.T. and Labib S.M.},
-#>     year = {2021},
-#>     url = {https://doi.org/10.5281/zenodo.5060325},
+#>     year = {2022},
+#>     url = {https://doi.org/10.5281/zenodo.7057132},
 #>   }
 ```
 
