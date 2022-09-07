@@ -56,7 +56,7 @@ NumericVector IDW_cpp(S4 &rast, const NumericVector &x,
   // Main loop: Loop over all values of the raster x
 #if defined(_OPENMP)
   omp_set_num_threads(ncores);
-#pragma omp parallel for shared(out)
+#pragma omp parallel for schedule(dynamic) shared(out)
 #endif
   for(int j = 0; j < x.size(); j++){
     if ( pb.increment() ) {

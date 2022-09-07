@@ -179,7 +179,7 @@ sf_to_rast <- function(observer, v, aoi = NULL, max_distance = Inf, n = Inf, bet
                       sf_x = sf::st_coordinates(observer)[,1],
                       sf_y = sf::st_coordinates(observer)[,2],
                       sf_z = dplyr::pull(observer, v),
-                      n = n, b = beta, radius = max_distance, mode = mode,
+                      n = n, b = beta, radius = max_distance, mode = 0, #mode,
                       na_only = na_only, ncores = cores, display_progress = progress)
   
   iwd_rast[] <- iwd_vals
