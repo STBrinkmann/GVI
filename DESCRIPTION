@@ -25,7 +25,7 @@ Imports:
     foreach,
     magrittr,
     raster,
-    Rcpp,
+    Rcpp (>= 1.0.8),
     sf,
     terra,
     graphics,
@@ -38,4 +38,4 @@ Depends:
 LinkingTo:
     Rcpp,
     RcppProgress
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
