@@ -149,7 +149,7 @@ vgvi_from_sf(observer = observer,
              m = 0.5, b = 8, mode = "logit")$VGVI
 ```
 
-The output of \~0.53 indicates, that \~53% of the visible area, within a 200 meters radius, is green.
+The output of \~0.525 indicates, that \~53.5% of the visible area, within a 200 meters radius, is green.
 
 ### 2. Road Network
 

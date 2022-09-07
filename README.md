@@ -195,8 +195,8 @@ vgvi_from_sf(observer = observer,
 #> [1] 0.5255536
 ```
 
-The output of \~0.53 indicates, that \~53% of the visible area, within a
-200 meters radius, is green.
+The output of \~0.525 indicates, that \~53.5% of the visible area,
+within a 200 meters radius, is green.
 
 ### 2. Road Network
 
@@ -244,7 +244,7 @@ citation("GVI")
 #> 
 #> To cite GVI in publications use:
 #> 
-#>   Brinkmann, S.T. and Labib, S.M. (2021). GVI: R package for computing
+#>   Brinkmann, S.T. and Labib, S.M. (2022). GVI: R package for computing
 #>   VGVI for Spatial Raster (v1.1). doi:
 #>   https://doi.org/10.5281/zenodo.7057132.
 #> 
