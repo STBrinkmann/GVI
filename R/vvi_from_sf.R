@@ -3,7 +3,7 @@
 #' The estimated VVI values range between 0 and 1, where 0 = no visible cells, and 1 = all of the cells are visible.
 #' A distance decay function is applied, to account for the reducing visual prominence of an object in space with increasing distance from the observer.
 #'
-#' @param observer object of class \code{sf}; Observer location(s) from where the VGVI should be computed. See ‘Details’ for valid sf geometry types
+#' @param observer object of class \code{sf}; Observer location(s) from where the VVI should be computed. See ‘Details’ for valid sf geometry types
 #' @param dsm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM
 #' @param dtm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DTM
 #' @param max_distance numeric; Buffer distance to calculate the viewshed
@@ -252,7 +252,7 @@ visibility_from_sf <- function(observer, dsm_rast, dtm_rast,
   
   #### 7. Calculate viewsheds and VVI ####
   if (progress) {
-    message(paste0("Computing VGVI for ", nrow(observer), ifelse(nrow(observer)>1, " points:", " point:")))
+    message(paste0("Computing VVI for ", nrow(observer), ifelse(nrow(observer)>1, " points:", " point:")))
     #pb = txtProgressBar(min = 0, max = length(observer_list), initial = 0, style = 3)
     start_time <- Sys.time()
   }

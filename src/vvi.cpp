@@ -18,7 +18,6 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
-                             Rcpp::S4 &greenspace, const Rcpp::NumericVector &greenspace_values,
                              const Rcpp::IntegerVector &x0, const Rcpp::IntegerVector &y0,
                              const Rcpp::NumericVector &h0, const int radius,
                              const int fun, const double m, const double b,
@@ -31,8 +30,7 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
   
   // Basic raster information
   const RasterInfo dsm_ras(dsm);
-  const RasterInfo gs_ras(greenspace);
-  
+
   // Parameters
   const int r = (int)round(radius/dsm_ras.res);
   const int nc_ref = (2*r)+1, nr_ref = (2*r)+1;
@@ -151,18 +149,7 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
         }
       }
       
-      // Intersect XY with greenspace mask
-      std::vector<int> greenspace_cells = cellFromXY(gs_ras, dsm_xy);
-      std::vector<double> greenspace_cell_values(cs, 0.0);
-      for(int i = 0; i < cs; i++){
-        int gs_cell = greenspace_cells[i]; 
-        if(!Rcpp::IntegerVector::is_na(gs_cell)){
-          double gs = greenspace_values[gs_cell];
-          greenspace_cell_values[i] =  Rcpp::NumericVector::is_na(gs) ? 0.0 : gs;
-        }
-      }
-      
-      // Get number of green visible cells and total visible cells per distance
+      // Get total visible cells per distance
       const double max_d = *std::max_element(dxy.begin(), dxy.end()) + 0.0;
       
       std::vector<int> dxy_seq(max_d);
@@ -171,12 +158,10 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
       const int n = dxy_seq.size();
       
       std::vector<int> visibleTotal(n);
-      std::vector<int> visibleGreen(n);
-      
+
       for(int i = 0; i < cs; i++){
         int this_dxy = (int)dxy[i];
         visibleTotal[this_dxy-1] += 1;
-        visibleGreen[this_dxy-1] += greenspace_cell_values[i];
       }
       for(int i = 0; i < n; i++){
         if(visibleTotal[i] == 0){
@@ -184,14 +169,14 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
         }
       }
       
-      // Proportion of visible green cells
+      // Proportion of visible cells
       if(max_d == 1.0){
-        output[k] = visibleGreen[0]/visibleTotal[0];
+        output[k] = visibleTotal[0];
         continue;
       }
-      std::vector<double> raw_GVI(n);
+      std::vector<double> raw_VVI(n);
       for(int i = 0; i < n; i++){
-        raw_GVI[i] = (double)visibleGreen[i] / visibleTotal[i];
+        raw_VVI[i] = (double)visibleTotal[i];
       }
       
       
@@ -213,13 +198,13 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
       const double big_integral = std::accumulate(decayWeights.begin(), decayWeights.end(), 0.0);
       
       
-      // Proportion of visible green
-      double vgvi_sum = 0.0; 
+      // Proportion of visible cells
+      double vvi_sum = 0.0; 
       for(int i = 0; i < n; i++){
-        vgvi_sum += raw_GVI[i] * (decayWeights[i]/big_integral);
+        vvi_sum += raw_VVI[i] * (decayWeights[i]/big_integral);
       }
       
-      output[k] = vgvi_sum;
+      output[k] = vvi_sum;
       pb.increment();
     }
   }
