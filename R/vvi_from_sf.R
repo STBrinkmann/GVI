@@ -1,7 +1,6 @@
 #' Viewshed Visibility Index (VVI) from sf
 #' @description The VVI expresses the proportion of visible area to the total area based on a \code{\link[GVI]{viewshed}}.
 #' The estimated VVI values range between 0 and 1, where 0 = no visible cells, and 1 = all of the cells are visible.
-#' A distance decay function is applied, to account for the reducing visual prominence of an object in space with increasing distance from the observer.
 #'
 #' @param observer object of class \code{sf}; Observer location(s) from where the VVI should be computed. See ‘Details’ for valid sf geometry types
 #' @param dsm_rast object of class \code{\link[terra]{rast}}; \code{\link[terra]{rast}} of the DSM
@@ -11,9 +10,6 @@
 #' @param raster_res optional; NULL or numeric > 0; Resolution that the GVI raster should be aggregated to. Needs to be a multible of the dsm_rast resolution
 #' @param spacing optional; numeric > 0; Only if \code{observer} is a linestring (or polygon), points on the line (or on a grid) will be generated.
 #' The \code{spacing} parameter sets the distance in between the points on the line/grid
-#' @param m numeric; See ‘Details’
-#' @param b numeric; See ‘Details’
-#' @param mode character; 'logit' or 'exponential'. See ‘Details’
 #' @param cores numeric; The number of cores to use, i.e. at most how many child processes will be run simultaneously
 #' @param folder_path optional; Folder path to where the output should be saved continuously. Must not inklude a filename extension (e.g. '.shp', '.gpkg').
 #' @param progress logical; Show progress bar and computation time?
@@ -23,10 +19,6 @@
 #' points will be generated along the line(s) every "resolution" meters. If observer is a POLYGON or MULTIPOLYGON, a grid with resolution = "resolution" 
 #' will be generated, and VVI will be computed for every point.
 #' The CRS (\code{\link[sf]{st_crs}}) needs to have a metric unit!
-#' 
-#' The type of function, used for calculating the distance decay weights, can be defined with the \code{mode} parameter.
-#' The argument 'logit' uses the logistic function, d = 1 / (1 + e^(b * (x - m))) and 'exponential' the exponential function d = 1 / (1 + (b * x^m)).
-#' The decay function can be visualized using the \code{\link[GVI]{visualizeWeights}} function.
 #'
 #' @return sf_object containing the weighted VVI values as POINT features, where 0 = no visible cells, and 1 = all of the cells are visible. 
 #' @export
@@ -72,7 +64,6 @@
 vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
                          max_distance = 800, observer_height = 1.7,
                          raster_res = NULL, spacing = raster_res,
-                         m = 0.5, b = 8, mode = c("logit", "exponential"),
                          cores = 1, folder_path = NULL, progress = FALSE) {
   
   #### 1. Check input ####
@@ -94,7 +85,7 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
     stop("dsm_rast needs to be a SpatRaster object!")
   } else if (sf::st_crs(terra::crs(dsm_rast))$epsg != sf::st_crs(observer)$epsg) {
     stop("dsm_rast needs to have the same CRS as observer")
-  } else if(dsm_rast@ptr$res[1] != dsm_rast@ptr$res[2]) {
+  } else if (dsm_rast@ptr$res[1] != dsm_rast@ptr$res[2]) {
     stop("dsm_rast: x and y resolution must be equal.\nSee https://github.com/STBrinkmann/GVI/issues/1")
   }
   
@@ -125,11 +116,11 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   }
   
   # mode
-  if (is.character(mode) && (mode == "logit")){
+  if (is.character(mode) && (mode == "logit")) {
     mode = 1
-  } else if (is.character(mode) && (mode == "exponential")){
+  } else if (is.character(mode) && (mode == "exponential")) {
     mode = 2
-  } else if (is.character(mode) && (mode == c("logit", "exponential"))){
+  } else if (is.character(mode) && (mode == c("logit", "exponential"))) {
     mode = 2
   } else {
     stop("mode must be logit or exponential")
@@ -146,7 +137,7 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   
   
   #### 2. Convert observer to points ####
-  if(progress) {
+  if (progress) {
     message("Preprocessing:")
     pb = txtProgressBar(min = 0, max = 5, initial = 0, style = 2)
   }
@@ -185,7 +176,7 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   # Crop DSM to max AOI and change resolution
   dsm_rast <- terra::crop(dsm_rast, terra::vect(max_aoi))
 
-  if(raster_res != min(raster::res(dsm_rast))) {
+  if (raster_res != min(raster::res(dsm_rast))) {
     terra::terraOptions(progress = 0)
     dsm_rast <- terra::aggregate(dsm_rast, fact = raster_res/terra::res(dsm_rast))
     terra::terraOptions(progress = 3)
@@ -258,8 +249,8 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   }
   
   vvi_values <- VVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
-                          x0 = c0, y0 = r0, radius = max_distance, h0 = height_0_vec,
-                          fun = mode, m = m, b = b, ncores = cores, display_progress = progress)
+                          x0 = c0, y0 = r0, h0 = height_0_vec, radius = max_distance,
+                          ncores = cores, display_progress = progress)
   
   valid_values <- unlist(lapply(vvi_values, is.numeric), use.names = FALSE)
   observer[valid_values,2] <- vvi_values[valid_values]

@@ -20,7 +20,6 @@ using namespace Rcpp;
 std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
                              const Rcpp::IntegerVector &x0, const Rcpp::IntegerVector &y0,
                              const Rcpp::NumericVector &h0, const int radius,
-                             const int fun, const double m, const double b,
                              const int ncores=1, const bool display_progress=false)
 {
   // Cells from x0, y0
@@ -40,7 +39,7 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
   // Output vector
   std::vector<double> output(input_cells.size(), NA_REAL);
   
-  // Protoptype of Line of Sight (LoS) paths:
+  // Prototype of Line of Sight (LoS) paths:
   // Will be used as a reference for all input points
   const Rcpp::IntegerVector los_ref_vec = LoS_reference(x0_ref, y0_ref, r, nc_ref);
   const Rcpp::IntegerVector los_start = shared_LoS(r, los_ref_vec);
@@ -130,81 +129,10 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
                                     std::end(viewshed));
       
       
-      // B: Greenspace Visibility Index
+      // B: Visibility Index
       const int cs = viewshed.size();
       
-      // Get XY coordinates of visible cells
-      const std::vector<std::vector<double>> dsm_xy = xyFromCell(dsm_ras, viewshed);
-      const std::vector<std::vector<double>> xy0 = xyFromCell(dsm_ras, input_cells[k]);
-      
-      // Calculate distance
-      std::vector<int> dxy(cs);
-      for(int i = 0; i < cs; i++){
-        double d = sqrt( ((xy0[0][0] - dsm_xy[i][0])*(xy0[0][0] - dsm_xy[i][0])) + ((xy0[0][1] - dsm_xy[i][1])*(xy0[0][1] - dsm_xy[i][1])) );
-        int di = round(d);
-        if(di < 1) {
-          dxy[i] = 1;
-        } else {
-          dxy[i] = di;
-        }
-      }
-      
-      // Get total visible cells per distance
-      const double max_d = *std::max_element(dxy.begin(), dxy.end()) + 0.0;
-      
-      std::vector<int> dxy_seq(max_d);
-      std::iota(dxy_seq.begin(), dxy_seq.end(), 1);
-      
-      const int n = dxy_seq.size();
-      
-      std::vector<int> visibleTotal(n);
-
-      for(int i = 0; i < cs; i++){
-        int this_dxy = (int)dxy[i];
-        visibleTotal[this_dxy-1] += 1;
-      }
-      for(int i = 0; i < n; i++){
-        if(visibleTotal[i] == 0){
-          visibleTotal[i] = 1;
-        }
-      }
-      
-      // Proportion of visible cells
-      if(max_d == 1.0){
-        output[k] = visibleTotal[0];
-        continue;
-      }
-      std::vector<double> raw_VVI(n);
-      for(int i = 0; i < n; i++){
-        raw_VVI[i] = (double)visibleTotal[i];
-      }
-      
-      
-      // Normalize distance
-      std::vector<double> nDxy(n);
-      for(int i = 0; i < n; i++){
-        nDxy[i] = dxy_seq[i] / (double)radius;
-      }
-      
-      
-      // Calculate weights by taking the proportion of the integral
-      // of each step from the integral of the whole area
-      const double min_dist = *std::min_element(nDxy.begin(), nDxy.end());
-      std::vector<double> decayWeights(n);
-      for(int i = 0; i < n; i++){
-        double d = nDxy[i];
-        decayWeights[i] = integrate(d-min_dist, d, 200, fun, m, b);
-      }
-      const double big_integral = std::accumulate(decayWeights.begin(), decayWeights.end(), 0.0);
-      
-      
-      // Proportion of visible cells
-      double vvi_sum = 0.0; 
-      for(int i = 0; i < n; i++){
-        vvi_sum += raw_VVI[i] * (decayWeights[i]/big_integral);
-      }
-      
-      output[k] = vvi_sum;
+      output[k] = cs / dsm_ras.ncell;
       pb.increment();
     }
   }

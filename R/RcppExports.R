@@ -25,7 +25,7 @@ viewshed_cpp <- function(dsm, dsm_values, x0, y0, h0, radius, display_progress =
     .Call(`_GVI_viewshed_cpp`, dsm, dsm_values, x0, y0, h0, radius, display_progress)
 }
 
-VVI_cpp <- function(dsm, dsm_values, x0, y0, h0, radius, fun, m, b, ncores = 1L, display_progress = FALSE) {
-    .Call(`_GVI_VVI_cpp`, dsm, dsm_values, x0, y0, h0, radius, fun, m, b, ncores, display_progress)
+VVI_cpp <- function(dsm, dsm_values, x0, y0, h0, radius, ncores = 1L, display_progress = FALSE) {
+    .Call(`_GVI_VVI_cpp`, dsm, dsm_values, x0, y0, h0, radius, ncores, display_progress)
 }
 

@@ -12,9 +12,6 @@ vvi_from_sf(
   observer_height = 1.7,
   raster_res = NULL,
   spacing = raster_res,
-  m = 0.5,
-  b = 8,
-  mode = c("logit", "exponential"),
   cores = 1,
   folder_path = NULL,
   progress = FALSE
@@ -36,12 +33,6 @@ vvi_from_sf(
 \item{spacing}{optional; numeric > 0; Only if \code{observer} is a linestring (or polygon), points on the line (or on a grid) will be generated.
 The \code{spacing} parameter sets the distance in between the points on the line/grid}
 
-\item{m}{numeric; See ‘Details’}
-
-\item{b}{numeric; See ‘Details’}
-
-\item{mode}{character; 'logit' or 'exponential'. See ‘Details’}
-
 \item{cores}{numeric; The number of cores to use, i.e. at most how many child processes will be run simultaneously}
 
 \item{folder_path}{optional; Folder path to where the output should be saved continuously. Must not inklude a filename extension (e.g. '.shp', '.gpkg').}
@@ -54,15 +45,10 @@ sf_object containing the weighted VVI values as POINT features, where 0 = no vis
 \description{
 The VVI expresses the proportion of visible area to the total area based on a \code{\link[GVI]{viewshed}}.
 The estimated VVI values range between 0 and 1, where 0 = no visible cells, and 1 = all of the cells are visible.
-A distance decay function is applied, to account for the reducing visual prominence of an object in space with increasing distance from the observer.
 }
 \details{
 observer needs to be a geometry of type POINT, LINESTRING, MULTILINESTRING, POLYGON or MULTIPOLYGON. If observer is a LINESTRING or MULTILINESTRING, 
 points will be generated along the line(s) every "resolution" meters. If observer is a POLYGON or MULTIPOLYGON, a grid with resolution = "resolution" 
 will be generated, and VVI will be computed for every point.
 The CRS (\code{\link[sf]{st_crs}}) needs to have a metric unit!
-
-The type of function, used for calculating the distance decay weights, can be defined with the \code{mode} parameter.
-The argument 'logit' uses the logistic function, d = 1 / (1 + e^(b * (x - m))) and 'exponential' the exponential function d = 1 / (1 + (b * x^m)).
-The decay function can be visualized using the \code{\link[GVI]{visualizeWeights}} function.
 }

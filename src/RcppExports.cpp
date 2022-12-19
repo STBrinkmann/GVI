@@ -125,8 +125,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // VVI_cpp
-std::vector<double> VVI_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector& x0, const Rcpp::IntegerVector& y0, const Rcpp::NumericVector& h0, const int radius, const int fun, const double m, const double b, const int ncores, const bool display_progress);
-RcppExport SEXP _GVI_VVI_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP h0SEXP, SEXP radiusSEXP, SEXP funSEXP, SEXP mSEXP, SEXP bSEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
+std::vector<double> VVI_cpp(Rcpp::S4& dsm, const Rcpp::NumericVector& dsm_values, const Rcpp::IntegerVector& x0, const Rcpp::IntegerVector& y0, const Rcpp::NumericVector& h0, const int radius, const int ncores, const bool display_progress);
+RcppExport SEXP _GVI_VVI_cpp(SEXP dsmSEXP, SEXP dsm_valuesSEXP, SEXP x0SEXP, SEXP y0SEXP, SEXP h0SEXP, SEXP radiusSEXP, SEXP ncoresSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -136,12 +136,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type y0(y0SEXP);
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type h0(h0SEXP);
     Rcpp::traits::input_parameter< const int >::type radius(radiusSEXP);
-    Rcpp::traits::input_parameter< const int >::type fun(funSEXP);
-    Rcpp::traits::input_parameter< const double >::type m(mSEXP);
-    Rcpp::traits::input_parameter< const double >::type b(bSEXP);
     Rcpp::traits::input_parameter< const int >::type ncores(ncoresSEXP);
     Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(VVI_cpp(dsm, dsm_values, x0, y0, h0, radius, fun, m, b, ncores, display_progress));
+    rcpp_result_gen = Rcpp::wrap(VVI_cpp(dsm, dsm_values, x0, y0, h0, radius, ncores, display_progress));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -153,7 +150,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_GVI_viewshed_and_greenness_distance_analysis_cpp", (DL_FUNC) &_GVI_viewshed_and_greenness_distance_analysis_cpp, 10},
     {"_GVI_VGVI_cpp", (DL_FUNC) &_GVI_VGVI_cpp, 13},
     {"_GVI_viewshed_cpp", (DL_FUNC) &_GVI_viewshed_cpp, 7},
-    {"_GVI_VVI_cpp", (DL_FUNC) &_GVI_VVI_cpp, 11},
+    {"_GVI_VVI_cpp", (DL_FUNC) &_GVI_VVI_cpp, 8},
     {NULL, NULL, 0}
 };
 
