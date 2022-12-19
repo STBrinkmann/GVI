@@ -17,7 +17,7 @@ using namespace Rcpp;
 #include "eta_progress_bar.hpp"
 
 // [[Rcpp::export]]
-std::vector<double> VISIBILITY_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
+std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values,
                              Rcpp::S4 &greenspace, const Rcpp::NumericVector &greenspace_values,
                              const Rcpp::IntegerVector &x0, const Rcpp::IntegerVector &y0,
                              const Rcpp::NumericVector &h0, const int radius,
