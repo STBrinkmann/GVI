@@ -115,17 +115,6 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
     spacing <- raster_res
   }
   
-  # mode
-  if (is.character(mode) && (mode == "logit")) {
-    mode = 1
-  } else if (is.character(mode) && (mode == "exponential")) {
-    mode = 2
-  } else if (is.character(mode) && (mode == c("logit", "exponential"))) {
-    mode = 2
-  } else {
-    stop("mode must be logit or exponential")
-  }
-  
   # folder_path
   if (!is.null(folder_path)) {
     if (!dir.exists(folder_path)) {
@@ -265,10 +254,10 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
     cat("\n")
     
     time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "m")))
-    if(time_total < 1){
+    if (time_total < 1){
       time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))
       
-      if(time_total < 1){
+      if (time_total < 1){
         time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))*1000
         message(paste("Total runtime:", time_total, " milliseconds"))
       } else {
