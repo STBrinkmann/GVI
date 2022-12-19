@@ -69,7 +69,7 @@
 #' @importFrom utils setTxtProgressBar
 #' @useDynLib GVI, .registration = TRUE
 
-visibility_from_sf <- function(observer, dsm_rast, dtm_rast,
+vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
                          max_distance = 800, observer_height = 1.7,
                          raster_res = NULL, spacing = raster_res,
                          m = 0.5, b = 8, mode = c("logit", "exponential"),
