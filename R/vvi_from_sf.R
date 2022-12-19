@@ -244,6 +244,10 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   valid_values <- unlist(lapply(vvi_values, is.numeric), use.names = FALSE)
   observer[valid_values,2] <- vvi_values[valid_values]
   
+  # workaround; should rather have VVI_cpp return VVI directly instead of ncells_visible
+  # this is probably an approximation and might be incorrect if viewshed is partly outside raster extent
+  observer$VVI <- observer$VVI / (pi * (max_distance / raster_res)^2)
+  
   if (!is.null(folder_path)) {
     sf::st_write(observer, folder_path, append = TRUE, quiet = T)
   }

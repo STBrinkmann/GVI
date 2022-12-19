@@ -129,7 +129,9 @@ std::vector<int> viewshed_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_valu
               
               if(!(cell<0 || cell > ras.ncell || Rcpp::NumericVector::is_na(h_cell) || dcol>r)){
                 // Compute tangent of x0/y0 (observer location) and this LoS path cell
-                const double distance_traveled = sqrt((x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row));
+                const double distance_traveled = sqrt(
+                  (x0_o[k] - col)*(x0_o[k] - col) + (y0_o[k] - row)*(y0_o[k] - row)
+                );
                 const double this_tan = (h_cell - h0[k]) / (distance_traveled);
                 
                 // Update viewshed and max tangent
