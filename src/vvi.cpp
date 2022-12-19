@@ -131,9 +131,8 @@ std::vector<double> VVI_cpp(Rcpp::S4 &dsm, const Rcpp::NumericVector &dsm_values
       
       // B: Visibility Index
       const int cs = viewshed.size();
-      const int area = dsm_values.size();
-      
-      output[k] = cs / area;
+
+      output[k] = cs;
       pb.increment();
     }
   }
