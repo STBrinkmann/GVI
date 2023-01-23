@@ -13,6 +13,9 @@
 #' @param cores numeric; The number of cores to use, i.e. at most how many child processes will be run simultaneously
 #' @param folder_path optional; Folder path to where the output should be saved continuously. Must not inklude a filename extension (e.g. '.shp', '.gpkg').
 #' @param progress logical; Show progress bar and computation time?
+#' @param output_type A string. One of `"VVI"`, `"viewshed"` or `"cumulative"`
+#' @param by_row Logical. Default `FALSE`. Whether or not to return the result separately for each row in `observer`.
+#' Only useful for lines or polygons.
 #'
 #' @details 
 #' observer needs to be a geometry of type POINT, LINESTRING, MULTILINESTRING, POLYGON or MULTIPOLYGON. If observer is a LINESTRING or MULTILINESTRING, 
@@ -20,7 +23,12 @@
 #' will be generated, and VVI will be computed for every point.
 #' The CRS (\code{\link[sf]{st_crs}}) needs to have a metric unit!
 #'
-#' @return sf_object containing the weighted VVI values as POINT features, where 0 = no visible cells, and 1 = all of the cells are visible. 
+#' @return 
+#' If `output_type` is `"VVI"`, an sf_object containing the VVI values as POINT features, where 0 = no visible cells, and 1 = all of the cells are visible.
+#' If `output_type` is `"viewshed"`, a `SpatRaster` where cell values are equal to the number of times they are visible from observers.
+#' These values range from 0 to the number of observer points (depending on spacing).
+#' If `output_type` is `"cumulative"` and `by_row` is FALSE, a single number indicating the cumulative proportion of cells that are visible from at least one observer point inside the area determined by the union of observer points buffered by `max_distance`.
+#' In case `by_row` is TRUE, this will be a data.frame with columns `rowid` (identifying each row in `observer`) and `cvvi` (the cumulative viewshed visibility index).
 #' @export
 #' 
 #' @importFrom magrittr %>%
@@ -62,9 +70,11 @@
 #' @useDynLib GVI, .registration = TRUE
 
 vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
-                         max_distance = 800, observer_height = 1.7,
-                         raster_res = NULL, spacing = raster_res,
-                         cores = 1, folder_path = NULL, progress = FALSE) {
+                        max_distance = 800, observer_height = 1.7,
+                        raster_res = NULL, spacing = raster_res,
+                        cores = 1, folder_path = NULL, progress = FALSE,
+                        output_type = c("VVI", "viewshed", "cumulative"),
+                        by_row = FALSE) {
   
   #### 1. Check input ####
   # observer
@@ -123,7 +133,20 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
     folder_path <- tempfile(pattern = "VVI_", tmpdir = file.path(folder_path),
                             fileext = ".gpkg")
   }
+  # output_type
+  output_type <- match.arg(output_type)
   
+  # cores
+  stopifnot(is.numeric(cores), cores > 0)
+  if (.Platform$OS.type == "windows" && cores > 1) {
+    cores = 1
+    message(
+      "Setting cores > 1 on a Windows OS is currently not supported.\\n",
+      "The cores argument has been automatically set to 1")
+  }
+  
+  # by_row
+  stopifnot(is.logical(by_row))
   
   #### 2. Convert observer to points ####
   if (progress) {
@@ -132,25 +155,51 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   }
   
   if (as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) %in% c("LINESTRING", "MULTILINESTRING")) {
-    observer <- observer %>%
-      sf::st_union() %>%
-      sf::st_cast("LINESTRING") %>%
-      sf::st_line_sample(density = 1/spacing) %>%
-      sf::st_cast("POINT") %>%
-      sf::st_as_sf() %>% 
-      dplyr::rename(geom = x)
+    if (!by_row) {
+      observer <- observer %>%
+        sf::st_union() %>%
+        sf::st_cast("LINESTRING") %>%
+        sf::st_line_sample(density = 1/spacing) %>%
+        sf::st_cast("POINT") %>%
+        sf::st_as_sf() %>% 
+        dplyr::rename(geom = x)
+    } else {
+      observer <- observer %>%
+        dplyr::mutate(rowid = seq_len(dplyr::n())) %>%
+        sf::st_union(by_feature = by_row) %>%
+        sf::st_cast("LINESTRING") %>%
+        sf::st_line_sample(density = 1/spacing) %>%
+        sf::st_cast("POINT") %>%
+        sf::st_as_sf() %>% 
+        dplyr::rename(geom = x)
+    }
   } else if (as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) %in% c("POLYGON", "MULTIPOLYGON")) {
-    observer_bbox <- sf::st_bbox(observer)
-    observer <- terra::rast(xmin = observer_bbox[1], xmax = observer_bbox[3], 
-                            ymin = observer_bbox[2], ymax = observer_bbox[4], 
-                            crs = terra::crs(dsm_rast), resolution = spacing, vals = 0) %>% 
-      terra::crop(terra::vect(observer)) %>% 
-      terra::mask(terra::vect(observer)) %>%
-      terra::xyFromCell(which(terra::values(.) == 0)) %>%
-      as.data.frame() %>% 
-      sf::st_as_sf(coords = c("x","y"), crs = sf::st_crs(observer)) %>% 
-      dplyr::rename(geom = geometry)
-    rm(observer_bbox)
+    if (!by_row) {
+      points <- poly_to_points(obs = observer, dsm_rast = dsm_rast,
+                                 spacing = spacing)
+      # join attributes back
+      observer <- points %>%
+        sf::st_join(observer %>%
+                      dplyr::mutate(rowid = seq_len(dplyr::n())))
+      
+    } else {
+      geom_name <- attr(observer, "sf_column")
+      observer <- observer %>%
+        dplyr::mutate(rowid = seq_len(dplyr::n())) %>%
+        tidyr::nest(data = tidyr::all_of(geom_name)) %>%
+        mutate(points_sf = purrr::map(data,
+                               function(x) {
+                                 poly_to_points(obs = x,
+                                                dsm_rast = dsm_rast,
+                                                spacing = spacing)
+                               })) %>%
+        dplyr::select(-data) %>%
+        tidyr::unnest(points_sf) %>%
+        sf::st_as_sf() %>%
+        # unnesting messes up bbox
+        terra::vect() %>%
+        sf::st_as_sf()
+    }
   }
   if (progress) setTxtProgressBar(pb, 1)
   
@@ -237,45 +286,117 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
     start_time <- Sys.time()
   }
   
-  vvi_values <- VVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
+  if (progress) {
+    on.exit({
+      time_dif <- round(cores * ((as.numeric(difftime(Sys.time(), start_time, units = "s"))*1000) / nrow(observer)), 2)
+      cat("\n")
+      
+      time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "m")))
+      if (time_total < 1) {
+        time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))
+        
+        if (time_total < 1) {
+          time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s"))) * 1000
+          message(paste("Total runtime:", time_total, " milliseconds"))
+        } else {
+          message(paste("Total runtime:", time_total, " seconds"))
+        }
+      } else {
+        message(paste("Total runtime:", time_total, " minutes"))
+      }
+      
+      message(paste("Average time for a single point:", time_dif, "milliseconds"))
+    }, add = TRUE)
+  }
+  
+  viewshed_indices <- VVI_cpp(dsm = dsm_cpp_rast, dsm_values = dsm_vec,
                           x0 = c0, y0 = r0, h0 = height_0_vec, radius = max_distance,
                           ncores = cores, display_progress = progress)
   
-  valid_values <- unlist(lapply(vvi_values, is.numeric), use.names = FALSE)
-  observer[valid_values,2] <- vvi_values[valid_values]
+  valid_values <- unlist(lapply(viewshed_indices, is.numeric), use.names = FALSE)
   
-  # workaround; should rather have VVI_cpp return VVI directly instead of ncells_visible
-  # this is probably an approximation and might be incorrect if viewshed is partly outside raster extent
-  observer$VVI <- observer$VVI / (pi * (max_distance / raster_res)^2)
-  
-  if (!is.null(folder_path)) {
-    sf::st_write(observer, folder_path, append = TRUE, quiet = T)
-  }
-  
-  
-  if (progress) {
-    time_dif <- round(cores * ((as.numeric(difftime(Sys.time(), start_time, units = "s"))*1000) / nrow(observer)), 2)
-    cat("\n")
+  if (output_type == "VVI") {
+    observer[valid_values,2] <- sapply(viewshed_indices[valid_values], length)
     
-    time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "m")))
-    if (time_total < 1){
-      time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))
-      
-      if (time_total < 1){
-        time_total <- round(as.numeric(difftime(Sys.time(), start_time, units = "s")))*1000
-        message(paste("Total runtime:", time_total, " milliseconds"))
-      } else {
-        message(paste("Total runtime:", time_total, " seconds"))
-      }
-    } else {
-      message(paste("Total runtime:", time_total, " minutes"))
+    # workaround; should rather have VVI_cpp return VVI directly instead of ncells_visible
+    # this is probably an approximation and might be incorrect if viewshed is partly outside raster extent
+    observer$VVI <- observer$VVI / (pi * (max_distance / raster_res)^2)
+    
+    if (!is.null(folder_path)) {
+      sf::st_write(observer, folder_path, append = TRUE, quiet = T)
     }
-    
-    message(paste("Average time for a single point:", time_dif, "milliseconds"))
+    rm(dsm_cpp_rast, dsm_vec, c0, r0, height_0_vec)
+    invisible(gc())
+    return(observer)
   }
   
-  rm(dsm_cpp_rast, dsm_vec, c0, r0, height_0_vec)
-  invisible(gc())
+  if (output_type == "viewshed") {
+    # summed viewshed
+    summed_viewshed <- rast(dsm_rast)
+    values(summed_viewshed) <- 0
+    indices_count <- tabulate(unlist(viewshed_indices))
+    indices_count <- indices_count[indices_count > 0]
+    values(summed_viewshed)[sort(unique(unlist(viewshed_indices)))] <-
+      indices_count
+    rm(dsm_cpp_rast, dsm_vec, c0, r0, height_0_vec)
+    invisible(gc())
+    return(summed_viewshed)
+  }
   
-  return(observer)
+  if (output_type == "cumulative") {
+    # cumulative VVI
+    if (!by_row) {
+      area_buffer <- observer %>%
+        dplyr::filter(valid_values) %>%
+        sf::st_geometry() %>%
+        sf::st_buffer(max_distance) %>%
+        sf::st_union() %>%
+        sf::st_area()
+      cumulative_vvi <- dplyr::n_distinct(unlist(viewshed_indices[valid_values])) / 
+        (as.numeric(area_buffer) / raster_res^2)
+      rm(dsm_cpp_rast, dsm_vec, c0, r0, height_0_vec)
+      invisible(gc())
+      return(cumulative_vvi)
+    } else {
+      area_buffer <- observer %>%
+        dplyr::filter(valid_values) %>%
+        dplyr::group_by(rowid) %>%
+        sf::st_buffer(max_distance) %>%
+        dplyr::summarise() %>%
+        sf::st_area()
+      nvisible <- vector(mode = "double", length = length(unique(observer$rowid[valid_values])))
+      viewshed_indices_valid <- setNames(viewshed_indices[valid_values],
+                                         observer$rowid[valid_values])
+      for (i in unique(observer$rowid[valid_values])) {
+        nvisible[i] <- dplyr::n_distinct(
+          unlist(viewshed_indices_valid[observer$rowid[valid_values] == i])
+          )
+      }
+      cumulative_vvi <- nvisible / (as.numeric(area_buffer) / raster_res^2)
+      result <- data.frame(
+        rowid = unique(observer$rowid[valid_values]),
+        cvvi = cumulative_vvi
+      )
+      rm(dsm_cpp_rast, dsm_vec, c0, r0, height_0_vec)
+      invisible(gc())
+      return(result)
+    }
+  }
+}
+
+
+
+poly_to_points <- function(obs, dsm_rast, spacing) {
+  observer_bbox <- sf::st_bbox(obs)
+  points <- terra::rast(xmin = observer_bbox[1], xmax = observer_bbox[3], 
+                     ymin = observer_bbox[2], ymax = observer_bbox[4], 
+                     crs = terra::crs(dsm_rast),
+                     resolution = spacing, vals = 0) %>% 
+    terra::crop(terra::vect(obs)) %>% 
+    terra::mask(terra::vect(obs)) %>%
+    terra::xyFromCell(which(terra::values(.) == 0)) %>%
+    as.data.frame() %>% 
+    sf::st_as_sf(coords = c("x","y"), crs = sf::st_crs(obs)) %>% 
+    dplyr::rename(geom = geometry)
+  return(points)
 }

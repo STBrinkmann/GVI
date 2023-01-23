@@ -14,7 +14,9 @@ vvi_from_sf(
   spacing = raster_res,
   cores = 1,
   folder_path = NULL,
-  progress = FALSE
+  progress = FALSE,
+  output_type = c("VVI", "viewshed", "cumulative"),
+  by_row = FALSE
 )
 }
 \arguments{
@@ -38,9 +40,18 @@ The \code{spacing} parameter sets the distance in between the points on the line
 \item{folder_path}{optional; Folder path to where the output should be saved continuously. Must not inklude a filename extension (e.g. '.shp', '.gpkg').}
 
 \item{progress}{logical; Show progress bar and computation time?}
+
+\item{output_type}{A string. One of `"VVI"`, `"viewshed"` or `"cumulative"`}
+
+\item{by_row}{Logical. Default `FALSE`. Whether or not to return the result separately for each row in `observer`.
+Only useful for lines or polygons.}
 }
 \value{
-sf_object containing the weighted VVI values as POINT features, where 0 = no visible cells, and 1 = all of the cells are visible.
+If `output_type` is `"VVI"`, an sf_object containing the VVI values as POINT features, where 0 = no visible cells, and 1 = all of the cells are visible.
+If `output_type` is `"viewshed"`, a `SpatRaster` where cell values are equal to the number of times they are visible from observers.
+These values range from 0 to the number of observer points (depending on spacing).
+If `output_type` is `"cumulative"` and `by_row` is FALSE, a single number indicating the cumulative proportion of cells that are visible from at least one observer point inside the area determined by the union of observer points buffered by `max_distance`.
+In case `by_row` is TRUE, this will be a data.frame with columns `rowid` (identifying each row in `observer`) and `cvvi` (the cumulative viewshed visibility index).
 }
 \description{
 The VVI expresses the proportion of visible area to the total area based on a \code{\link[GVI]{viewshed}}.
