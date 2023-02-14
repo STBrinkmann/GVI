@@ -176,7 +176,9 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
   } else if (as.character(sf::st_geometry_type(observer, by_geometry = FALSE)) %in% c("POLYGON", "MULTIPOLYGON")) {
     if (!by_row) {
       points <- poly_to_points(obs = observer, dsm_rast = dsm_rast,
-                                 spacing = spacing)
+                                 spacing = spacing) %>%
+        sf::st_as_sf() %>%
+        dplyr::rename(geom = geometry)
       # join attributes back
       observer <- points %>%
         sf::st_join(observer %>%
@@ -184,20 +186,16 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
       
     } else {
       geom_name <- attr(observer, "sf_column")
-      observer <- observer %>%
+      byrows <- observer %>%
         dplyr::mutate(rowid = seq_len(dplyr::n())) %>%
-        tidyr::nest(data = tidyr::all_of(geom_name)) %>%
-        mutate(points_sf = purrr::map(data,
-                               function(x) {
-                                 poly_to_points(obs = x,
-                                                dsm_rast = dsm_rast,
-                                                spacing = spacing)
-                               })) %>%
-        dplyr::select(-data) %>%
-        tidyr::unnest(points_sf) %>%
-        sf::st_as_sf() %>%
-        # unnesting messes up bbox
-        terra::vect() %>%
+        split(., .$rowid)
+      observer <- Reduce(rbind,
+                         sapply(
+                           byrows,
+                           poly_to_points,
+                           dsm_rast = dsm_rast,
+                           spacing = spacing)
+                         ) %>%
         sf::st_as_sf()
     }
   }
@@ -358,11 +356,9 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
       invisible(gc())
       return(cumulative_vvi)
     } else {
-      area_buffer <- observer %>%
-        dplyr::filter(valid_values) %>%
-        dplyr::group_by(rowid) %>%
+      area_buffer <- 
+        Reduce(c, Map(sf::st_combine, split(observer, observer$rowid))) %>%
         sf::st_buffer(max_distance) %>%
-        dplyr::summarise() %>%
         sf::st_area()
       nvisible <- vector(mode = "double", length = length(unique(observer$rowid[valid_values])))
       viewshed_indices_valid <- setNames(viewshed_indices[valid_values],
@@ -388,15 +384,16 @@ vvi_from_sf <- function(observer, dsm_rast, dtm_rast,
 
 poly_to_points <- function(obs, dsm_rast, spacing) {
   observer_bbox <- sf::st_bbox(obs)
+  vect_obs <- terra::vect(obs)
+  values_obs <- terra::values(vect_obs)
   points <- terra::rast(xmin = observer_bbox[1], xmax = observer_bbox[3], 
                      ymin = observer_bbox[2], ymax = observer_bbox[4], 
                      crs = terra::crs(dsm_rast),
                      resolution = spacing, vals = 0) %>% 
-    terra::crop(terra::vect(obs)) %>% 
-    terra::mask(terra::vect(obs)) %>%
-    terra::xyFromCell(which(terra::values(.) == 0)) %>%
-    as.data.frame() %>% 
-    sf::st_as_sf(coords = c("x","y"), crs = sf::st_crs(obs)) %>% 
-    dplyr::rename(geom = geometry)
+    terra::mask(vect_obs) %>%
+    terra::as.points(values = FALSE)
+  terra::values(points) <- values_obs[rep(seq_len(nrow(values_obs)),
+                                          nrow(terra::geom(points))), ,
+                                      drop = FALSE]
   return(points)
 }
