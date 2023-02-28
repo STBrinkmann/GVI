@@ -134,8 +134,8 @@ Calculate the viewshed for a 200 meters radius around the observers position at 
 
 ```{r message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
 library(GVI)
-vs <- viewshed(observer = observer, dsm_rast = DSM, dtm_rast = DEM,
-               max_distance = 200, observer_height = 1.7, plot = TRUE)
+vs <- GVI::viewshed(observer = observer, dsm_rast = DSM, dtm_rast = DEM,
+                    max_distance = 200, observer_height = 1.7, plot = TRUE)
 ```
 
 *Left: Digital Surface Model (DSM); Right: Viewshed, where green = visible and yellow = no-visible area.*
