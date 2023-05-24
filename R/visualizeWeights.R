@@ -28,7 +28,7 @@ visualizeWeights <- function(x, m = 0.5, b = 8, mode = c("logit", "exponential")
     stop("x needs to be numeric or a SpatRaster object")
   }
   
-  if (mode == c("logit", "exponential") || mode == "logit") {
+  if (all(mode == c("logit", "exponential")) || mode == "logit") {
     logfun <- function(x){
       return(1 / (1 + exp((b) * (x - m))))
     }
