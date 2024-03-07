@@ -1,3 +1,5 @@
+# IMPORTANT
+THE GVI R PACKAGE IS NO LONGER UNDER MAINTANACE. Please visit https://github.com/STBrinkmann/CGEI
 
 # GVI: Greenness Visibility Index [<img src="man/figures/logo.png" align="right" height="139"/>](https://github.com/STBrinkmann/GVI)
 
